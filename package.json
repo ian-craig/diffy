@@ -16,6 +16,7 @@
     "react-dom": "^16.9.0",
     "react-monaco-editor": "^0.30.1",
     "react-scripts": "3.1.1",
+    "react-split-pane": "^0.1.87",
     "typescript": "3.5.3"
   },
   "main": "public/electron.js",
