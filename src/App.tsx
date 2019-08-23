@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import MonacoEditor from 'react-monaco-editor';
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,13 @@ const App: React.FC = () => {
           Learn React
         </a>
       </header>
+      <MonacoEditor
+        width="800"
+        height="600"
+        language="javascript"
+        theme="vs-dark"
+        value={"code"}
+      />
     </div>
   );
 }
