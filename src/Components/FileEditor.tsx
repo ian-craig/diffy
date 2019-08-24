@@ -1,6 +1,7 @@
 import React from 'react';
 import * as monaco from 'monaco-editor';
 import { IFileCompare } from '../DataStructures/IFileCompare';
+import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 
 export interface IFileEditorProps {
   width: number;
@@ -8,10 +9,22 @@ export interface IFileEditorProps {
   file: IFileCompare | undefined;
 }
 
-export class FileEditor extends React.Component<IFileEditorProps> {
+interface IState {
+  renderSideBySide: boolean;
+}
+
+export class FileEditor extends React.Component<IFileEditorProps, IState> {
   private containerRef = React.createRef<HTMLDivElement>();
   private editor!: monaco.editor.IStandaloneDiffEditor;
   private navigator!:  monaco.editor.IDiffNavigator;
+
+  constructor(props: IFileEditorProps) {
+    super(props);
+
+    this.state = {
+      renderSideBySide: false, //TODO Persist settings in some store?
+    }
+  }
 
   componentDidMount() {
     const containerElement = this.containerRef.current;
@@ -19,7 +32,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
       throw new Error("Expected container to be initialized.");
     }
     this.editor = monaco.editor.createDiffEditor(containerElement, {
-      renderSideBySide: false
+      renderSideBySide: this.state.renderSideBySide
     });
 
     this.navigator = monaco.editor.createDiffNavigator(this.editor, {
@@ -86,9 +99,32 @@ export class FileEditor extends React.Component<IFileEditorProps> {
     }
   }
 
+  private getFarItems() {
+    return [
+      {
+        key: 'renderSideBySide',
+        name: this.state.renderSideBySide ? 'Inline Diff' : 'Side-By-Side Diff',
+        ariaLabel: 'Diff Layout',
+        iconProps: {
+          iconName: this.state.renderSideBySide ? 'DiffInline' : 'DiffSideBySide',
+        },
+        onClick: () => {
+          this.setState({ renderSideBySide: !this.state.renderSideBySide });
+          //TODO this doesn't update the component. Need
+        }
+      },
+    ];
+  };
+
   render() {
     return (
-      <div ref={this.containerRef} />
+      <>
+        <CommandBar
+            items={[]}
+            farItems={this.getFarItems()}
+          />
+        <div ref={this.containerRef} />
+      </>
     );
   }
 }

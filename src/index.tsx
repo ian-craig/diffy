@@ -4,6 +4,9 @@ import './index.css';
 import App from './Components/App';
 import * as serviceWorker from './serviceWorker';
 
+import { initializeIcons } from '@uifabric/icons';
+initializeIcons();
+
 const changelist = require(`./samples/out.json`);
 
 ReactDOM.render(<App changeLists={[changelist]} />, document.getElementById('root'));
