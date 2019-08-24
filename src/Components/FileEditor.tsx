@@ -1,21 +1,19 @@
 import React from 'react';
 import * as monaco from 'monaco-editor';
+import { IFileCompare } from '../DataStructures/IFileCompare';
 
 export interface IFileEditorProps {
   width: number;
   height: number;
-  codeLeft: string;
-  codeRight: string;
+  file: IFileCompare | undefined;
 }
 
 export class FileEditor extends React.Component<IFileEditorProps> {
   private containerRef = React.createRef<HTMLDivElement>();
-  private editor?: monaco.editor.IStandaloneDiffEditor;
+  private editor!: monaco.editor.IStandaloneDiffEditor;
+  private navigator!:  monaco.editor.IDiffNavigator;
 
   componentDidMount() {
-    var originalModel = monaco.editor.createModel(this.props.codeLeft, "text/plain");
-    var modifiedModel = monaco.editor.createModel(this.props.codeRight, "text/plain");
-
     const containerElement = this.containerRef.current;
     if (containerElement === null) {
       throw new Error("Expected container to be initialized.");
@@ -23,9 +21,10 @@ export class FileEditor extends React.Component<IFileEditorProps> {
     this.editor = monaco.editor.createDiffEditor(containerElement, {
       renderSideBySide: false
     });
-    this.editor.setModel({
-      original: originalModel,
-      modified: modifiedModel
+
+    this.navigator = monaco.editor.createDiffNavigator(this.editor, {
+      followsCaret: true, // resets the navigator state when the user selects something in the editor
+      ignoreCharChanges: true // jump from line to line
     });
 
     this.editor.layout({ width: this.props.width, height: this.props.height });
@@ -37,25 +36,34 @@ export class FileEditor extends React.Component<IFileEditorProps> {
     */
   }
 
-  componentDidUpdate(prevProps: IFileEditorProps) {
-    /*
-    const model = this.editor.getModel();
-
-    if (this.props.value != null && this.props.value !== model.getValue()) {
-      this.__prevent_trigger_change_event = true;
-      this.editor.pushUndoStop();
-      model.pushEditOperations(
-        [],
-        [
-          {
-            range: model.getFullModelRange(),
-            text: this.props.value
-          }
-        ]
-      );
-      this.editor.pushUndoStop();
-      this.__prevent_trigger_change_event = false;
+  private updateModel() {
+    let leftContent = "";
+    let rightContent = "";
+    if (this.props.file !== undefined) {
+      leftContent = this.props.file.left.content;
+      rightContent = this.props.file.right.content;
     }
+
+    const currentModel = this.editor.getModel();
+    if (currentModel && currentModel.original) {
+      currentModel.original.dispose();
+      currentModel.modified.dispose();
+    }
+
+    this.editor.setModel({
+      original: monaco.editor.createModel(leftContent, "text/plain"),
+      modified: monaco.editor.createModel(rightContent, "text/plain")
+    });
+
+    this.navigator.next();
+  }
+
+  componentDidUpdate(prevProps: IFileEditorProps) {
+    if (this.props.file !== undefined && this.props.file !== prevProps.file) {
+      this.updateModel();
+    }
+
+    /*
     if (prevProps.language !== this.props.language) {
       monaco.editor.setModelLanguage(model, this.props.language);
     }
@@ -74,6 +82,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
         model.modified.dispose();
       }
       this.editor.dispose();
+      this.navigator.dispose();
     }
   }
 

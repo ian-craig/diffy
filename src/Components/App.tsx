@@ -1,9 +1,10 @@
 import React from 'react';
 import './App.css';
-import { FileEditor } from './Components/FileEditor';
-import { FileList } from './Components/FileList';
+import { FileEditor } from './FileEditor';
+import { FileList } from './FileList';
 import SplitPane from 'react-split-pane';
-import { IChangeList } from './DataStructures/IChangeList';
+import { IChangeList } from '../DataStructures/IChangeList';
+import { IFileCompare } from '../DataStructures/IFileCompare';
 
 export interface IAppProps {
   changeLists: IChangeList[];
@@ -12,6 +13,7 @@ export interface IAppProps {
 interface IState {
   codeWidth: number;
   codeHeight: number;
+  selectedFile: IFileCompare | undefined;
 }
 
 class App extends React.Component<IAppProps, IState> {
@@ -23,7 +25,14 @@ class App extends React.Component<IAppProps, IState> {
     this.state = {
       codeWidth: 0,
       codeHeight: 0,
+      selectedFile: undefined,
     };
+  }
+
+  private readonly onFileChange = (file: IFileCompare) => {
+    this.setState({
+      selectedFile: file,
+    });
   }
 
   private readonly onResize = (size?: number) => {
@@ -42,12 +51,11 @@ class App extends React.Component<IAppProps, IState> {
   }
 
   public render() {
-    const selectedFileChange = this.props.changeLists[0].files[0];
     return (
       <div className="App">
         <SplitPane split="vertical" minSize={50} defaultSize={this.listWidth} onChange={this.onResize}>
-          <FileList changeLists={this.props.changeLists} />
-          <FileEditor codeLeft={selectedFileChange.left.content} codeRight={selectedFileChange.right.content} width={this.state.codeWidth} height={this.state.codeHeight} />
+          <FileList changeLists={this.props.changeLists} onFileChange={this.onFileChange} />
+          <FileEditor file={this.state.selectedFile} width={this.state.codeWidth} height={this.state.codeHeight} />
         </SplitPane>
       </div>
     );
