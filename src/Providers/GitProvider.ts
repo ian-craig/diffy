@@ -62,10 +62,10 @@ class GitPlugin implements IProvider {
 }
 
 const factory: ProviderFactory = async (args: string[], cwd: string): Promise<IProvider | undefined> => {
-    console.log("Factory", cwd);
+    console.log("GitProvider Factory", cwd);
     try {
         const repo = await Git.Repository.open(cwd);
-        console.log(repo);
+        console.log("GitProvider repo", repo);
         return new GitPlugin(repo, args);
     } catch (error) {
         console.log(error);

@@ -1,21 +1,20 @@
-const { app, BrowserWindow } = require("electron");
-const path = require("path");
-const isDev = require("electron-is-dev");
+import { app, BrowserWindow }from "electron";
+import * as path from "path";
+import * as isDev from "electron-is-dev";
 
-global.provider = undefined;
-
-const plugins = [
-    require('./plugins/dist/plugins/GitPlugin').default,
+const providers = [
+    require('./Providers/GitProvider').default,
 ];
 
-let mainWindow;
+let mainWindow: BrowserWindow | null;
 const createWindow = async () => {
     const args = process.argv.slice(2);
     const cwd = process.cwd();
-    for (const pluginFactory of plugins) {
-        const plugin = await pluginFactory(args, cwd);
+    for (const providerFactory of providers) {
+        const plugin = await providerFactory(args, cwd);
         console.log("Plugin", plugin);
         if (plugin !== undefined) {
+            //@ts-ignore
             global.provider = plugin;
             break;
         }

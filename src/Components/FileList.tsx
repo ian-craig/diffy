@@ -1,8 +1,8 @@
 import React from 'react';
-import { IChangeList } from '../../DataStructures/IChangeList';
-import { IFileCompare } from '../../DataStructures/IFileCompare';
+import { IChangeList } from '../DataStructures/IChangeList';
+import { IFileCompare } from '../DataStructures/IFileCompare';
 import './FileList.css';
-import { IFile } from '../../DataStructures/IFile';
+import { IFile } from '../DataStructures/IFile';
 
 const List = require('react-list-select').default;
 

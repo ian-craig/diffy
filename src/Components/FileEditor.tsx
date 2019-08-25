@@ -1,6 +1,6 @@
 import React from 'react';
 import * as monaco from 'monaco-editor';
-import { IFileCompare } from '../../DataStructures/IFileCompare';
+import { IFileCompare } from '../DataStructures/IFileCompare';
 import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 
 export interface IFileEditorProps {

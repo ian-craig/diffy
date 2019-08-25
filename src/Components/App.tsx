@@ -3,9 +3,9 @@ import './App.css';
 import { FileEditor } from './FileEditor';
 import { FileList } from './FileList';
 import SplitPane from 'react-split-pane';
-import { IFileCompare } from '../../DataStructures/IFileCompare';
-import { IProvider } from '../../DataStructures/IProvider';
-import { IChangeList } from '../../DataStructures/IChangeList';
+import { IFileCompare } from '../DataStructures/IFileCompare';
+import { IProvider } from '../DataStructures/IProvider';
+import { IChangeList } from '../DataStructures/IChangeList';
 
 export interface IAppProps {
   provider: IProvider;
