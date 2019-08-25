@@ -23,17 +23,17 @@
     "react-split-pane": "^0.1.87",
     "typescript": "3.5.3"
   },
-  "main": "dist/electron.js",
+  "main": "build/electron.js",
   "build": {
-    "appId": "com.monacodiff"
+    "appId": "com.electron.monacodiff"
   },
   "scripts": {
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
     "react-test": "react-scripts test --env=jsdom",
     "electron-build": "electron-builder",
-    "release": "yarn react-build && yarn run compile:main && electron-builder --publish=always",
-    "build": "yarn react-build && yarn run compile:main && yarn electron-build",
+    "release": "yarn react-build && yarn run compile && electron-builder --publish=always",
+    "build": "yarn react-build && yarn run compile && yarn electron-build",
     "compile": "tsc -p electron-tsconfig.json --noEmit false",
     "start": "concurrently \"yarn compile --watch\" \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron": "electron ."
