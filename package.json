@@ -7,11 +7,13 @@
   "dependencies": {
     "@types/jest": "24.0.18",
     "@types/node": "12.7.2",
+    "@types/nodegit": "^0.24.10",
     "@types/react": "16.9.2",
     "@types/react-dom": "16.9.0",
     "cross-env": "^5.2.0",
     "electron-is-dev": "^1.1.0",
     "monaco-editor": "^0.17.1",
+    "nodegit": "^0.25.1",
     "office-ui-fabric-react": "^7.27.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
@@ -21,7 +23,7 @@
     "react-split-pane": "^0.1.87",
     "typescript": "3.5.3"
   },
-  "main": "public/electron.js",
+  "main": "electron.js",
   "build": {
     "appId": "com.monacodiff"
   },
@@ -31,9 +33,12 @@
     "react-test": "react-scripts test --env=jsdom",
     "react-eject": "react-scripts eject",
     "electron-build": "electron-builder",
+    "electron-rebuild": "electron-rebuild",
     "release": "yarn react-build && electron-builder --publish=always",
     "build": "yarn react-build && yarn electron-build",
-    "start": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\""
+    "compile:plugins": "tsc -p plugins/tsconfig.json",
+    "start": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron": "electron ."
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -54,6 +59,7 @@
     "concurrently": "^4.1.2",
     "electron": "^6.0.3",
     "electron-builder": "^21.2.0",
+    "electron-rebuild": "^1.8.6",
     "wait-on": "^3.3.0"
   }
 }

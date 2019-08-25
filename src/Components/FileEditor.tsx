@@ -1,6 +1,6 @@
 import React from 'react';
 import * as monaco from 'monaco-editor';
-import { IFileCompare } from '../DataStructures/IFileCompare';
+import { IFileCompare } from '../../DataStructures/IFileCompare';
 import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 
 export interface IFileEditorProps {
@@ -53,8 +53,8 @@ export class FileEditor extends React.Component<IFileEditorProps, IState> {
     let leftContent = "";
     let rightContent = "";
     if (this.props.file !== undefined) {
-      leftContent = this.props.file.left.content;
-      rightContent = this.props.file.right.content;
+      leftContent = this.props.file.left === undefined ? "" : this.props.file.left.content;
+      rightContent = this.props.file.right === undefined ? "" : this.props.file.right.content;
     }
 
     const currentModel = this.editor.getModel();
@@ -90,7 +90,7 @@ export class FileEditor extends React.Component<IFileEditorProps, IState> {
   componentWillUnmount() {
     if (this.editor) {
       const model = this.editor.getModel();
-      if (model) {
+      if (model && model.original) {
         model.original.dispose();
         model.modified.dispose();
       }
