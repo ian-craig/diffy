@@ -12,7 +12,6 @@ const createWindow = async () => {
     const cwd = process.cwd();
     for (const providerFactory of providers) {
         const plugin = await providerFactory(args, cwd);
-        console.log("Plugin", plugin);
         if (plugin !== undefined) {
             //@ts-ignore
             global.provider = plugin;
@@ -21,8 +20,8 @@ const createWindow = async () => {
     }
 
     mainWindow = new BrowserWindow({
-        width: 900,
-        height: 680,
+        width: 1000,
+        height: 800,
         webPreferences: {
             nodeIntegration: true
         }

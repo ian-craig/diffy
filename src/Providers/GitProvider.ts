@@ -2,6 +2,7 @@ import * as Git from 'nodegit';
 import { IChangeList } from '../DataStructures/IChangeList';
 import { IProvider, ProviderFactory } from '../DataStructures/IProvider';
 import { readFile } from 'fs';
+import * as path from 'path';
 
 const readFileAsync = async (filePath: string, encoding: string = 'utf8'): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -24,8 +25,9 @@ class GitPlugin implements IProvider {
             // This was a deletion (if left) or addition (if right)
             return undefined;
         }
+
         const contentPromise = readFromFile ?
-            readFileAsync(diffFile.path()) :
+            readFileAsync(path.join(this.repo.workdir(), diffFile.path())) :
             this.repo.getBlob(diffFile.id()).then(blob => blob.content().toString());
 
         return {
@@ -62,13 +64,17 @@ class GitPlugin implements IProvider {
 }
 
 const factory: ProviderFactory = async (args: string[], cwd: string): Promise<IProvider | undefined> => {
-    console.log("GitProvider Factory", cwd);
     try {
-        const repo = await Git.Repository.open(cwd);
-        console.log("GitProvider repo", repo);
+        const gitDir = (await Git.Repository.discover(cwd, 0, null as any)) as any as string;
+        if (!gitDir) {
+            return undefined;
+        }
+        const repoRoot = path.dirname(gitDir);
+        console.log(`GitProvider found repository at ${repoRoot}`);
+        const repo = await Git.Repository.open(repoRoot);
         return new GitPlugin(repo, args);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 
     return undefined;

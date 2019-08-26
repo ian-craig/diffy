@@ -23,6 +23,7 @@
     "react-split-pane": "^0.1.87",
     "typescript": "3.5.3"
   },
+  "homepage": ".",
   "main": "build/electron.js",
   "build": {
     "appId": "com.electron.monacodiff"
@@ -36,7 +37,8 @@
     "build": "yarn react-build && yarn run compile && yarn electron-build",
     "compile": "tsc -p electron-tsconfig.json --noEmit false",
     "start": "concurrently \"yarn compile --watch\" \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron": "electron ."
+    "electron": "electron .",
+    "postinstall": "electron-builder install-app-deps"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -58,6 +60,5 @@
     "electron": "^6.0.3",
     "electron-builder": "^21.2.0",
     "wait-on": "^3.3.0"
-  },
-  "postinstall": "electron-builder install-app-deps"
+  }
 }
