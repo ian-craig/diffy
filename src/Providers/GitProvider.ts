@@ -64,20 +64,23 @@ class GitPlugin implements IProvider {
 }
 
 const factory: ProviderFactory = async (args: string[], cwd: string): Promise<IProvider | undefined> => {
+    let repoRootDir;
     try {
         const gitDir = (await Git.Repository.discover(cwd, 0, null as any)) as any as string;
-        if (!gitDir) {
-            return undefined;
-        }
-        const repoRoot = path.dirname(gitDir);
-        console.log(`GitProvider found repository at ${repoRoot}`);
-        const repo = await Git.Repository.open(repoRoot);
+        repoRootDir = path.dirname(gitDir);
+    } catch {
+        return undefined;
+    }
+
+    try {
+        console.log(`GitProvider found repository at ${repoRootDir}`);
+        const repo = await Git.Repository.open(repoRootDir);
         return new GitPlugin(repo, args);
     } catch (error) {
         console.error(error);
     }
 
     return undefined;
-}
+};
 
 export default factory;

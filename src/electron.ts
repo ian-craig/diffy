@@ -10,7 +10,6 @@ const createWindow = async () => {
     const args = process.argv.slice(2);
     const cwd = process.cwd();
     for (const providerFactory of providers) {
-        console.log(providerFactory);
         const plugin = await providerFactory(args, cwd);
         if (plugin !== undefined) {
             //@ts-ignore
