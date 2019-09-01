@@ -1,44 +1,51 @@
 import React from 'react';
 import * as monaco from 'monaco-editor';
 import { IFileCompare } from '../DataStructures/IFileCompare';
-import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
+import { IFile } from '../DataStructures/IFile';
 
 export interface IFileEditorProps {
   width: number;
   height: number;
   file: IFileCompare | undefined;
-}
-
-interface IState {
   renderSideBySide: boolean;
 }
 
-export class FileEditor extends React.Component<IFileEditorProps, IState> {
+export class FileEditor extends React.Component<IFileEditorProps> {
   private containerRef = React.createRef<HTMLDivElement>();
-  private editor!: monaco.editor.IStandaloneDiffEditor;
-  private navigator!:  monaco.editor.IDiffNavigator;
+  private editor!: monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
+  private diffNavigator?:  monaco.editor.IDiffNavigator;
 
-  constructor(props: IFileEditorProps) {
-    super(props);
-
-    this.state = {
-      renderSideBySide: false, //TODO Persist settings in some store?
-    }
+  private get isDiff(): boolean {
+    return this.props.file !== undefined && this.props.file.left !== undefined && this.props.file.right !== undefined;
   }
 
-  componentDidMount() {
+  private createModels() {
+    this.disposeEditor();
+
+    if (this.props.file === undefined) {
+      return;
+    }
+
     const containerElement = this.containerRef.current;
     if (containerElement === null) {
       throw new Error("Expected container to be initialized.");
     }
-    this.editor = monaco.editor.createDiffEditor(containerElement, {
-      renderSideBySide: this.state.renderSideBySide
-    });
 
-    this.navigator = monaco.editor.createDiffNavigator(this.editor, {
-      followsCaret: true, // resets the navigator state when the user selects something in the editor
-      ignoreCharChanges: true // jump from line to line
-    });
+    if (this.isDiff) {
+      this.editor = monaco.editor.createDiffEditor(containerElement, {
+        renderSideBySide: this.props.renderSideBySide
+      });
+  
+      this.diffNavigator = monaco.editor.createDiffNavigator(this.editor, {
+        followsCaret: true, // resets the navigator state when the user selects something in the editor
+        ignoreCharChanges: true // jump from line to line
+      });
+
+    } else {
+      this.editor = monaco.editor.create(containerElement);
+    }
+   
+    this.updateModel();
 
     this.editor.layout({ width: this.props.width, height: this.props.height });
 
@@ -49,31 +56,68 @@ export class FileEditor extends React.Component<IFileEditorProps, IState> {
     */
   }
 
+  private disposeEditor() {
+    if (this.editor) {
+      this.disposeModels();
+      this.editor.dispose();
+      if (this.diffNavigator) {
+        this.diffNavigator.dispose();
+        this.diffNavigator = undefined;
+      }
+    }
+  }
+
+  private disposeModels() {
+    if (this.editor) {
+      const model = this.editor.getModel();
+      if (model && 'original' in model) {
+        if (model.original) {
+        model.original.dispose();
+        }
+        if (model.modified) {
+          model.modified.dispose();
+        }
+      } else if (model) {
+        model.dispose();
+      }
+    }
+  }
+
+  componentDidMount() {
+    this.createModels()
+  }
+
   private updateModel() {
-    let leftContent = "";
-    let rightContent = "";
-    if (this.props.file !== undefined) {
-      leftContent = this.props.file.left === undefined ? "" : this.props.file.left.content;
-      rightContent = this.props.file.right === undefined ? "" : this.props.file.right.content;
+    this.disposeModels();
+    if (this.props.file === undefined) {
+      return;
     }
 
-    const currentModel = this.editor.getModel();
-    if (currentModel && currentModel.original) {
-      currentModel.original.dispose();
-      currentModel.modified.dispose();
+    if (this.props.file.left !== undefined && this.props.file.right !== undefined) {
+      (this.editor as monaco.editor.IStandaloneDiffEditor).setModel({
+        original: monaco.editor.createModel(this.props.file.left.content, "text/plain"),
+        modified: monaco.editor.createModel(this.props.file.right.content, "text/plain")
+      });
+    } else {
+      const file = (this.props.file.left || this.props.file.right) as IFile;
+      (this.editor as monaco.editor.IStandaloneCodeEditor).setModel(
+        monaco.editor.createModel(file.content, "text/plain")
+      );
     }
 
-    this.editor.setModel({
-      original: monaco.editor.createModel(leftContent, "text/plain"),
-      modified: monaco.editor.createModel(rightContent, "text/plain")
-    });
-
-    this.navigator.next();
+    if (this.diffNavigator) {
+      // Jump to the first change if not already at it
+      const changes = (this.editor as monaco.editor.IStandaloneDiffEditor).getLineChanges();
+      if (changes && changes.length > 0 && changes[0].modifiedStartLineNumber > 0) {
+        this.diffNavigator.next();
+      }
+    }
   }
 
   componentDidUpdate(prevProps: IFileEditorProps) {
-    if (this.props.file !== undefined && this.props.file !== prevProps.file) {
-      this.updateModel();
+    if (this.props.renderSideBySide != prevProps.renderSideBySide || this.props.file !== prevProps.file) {
+      this.createModels();
+      return;
     }
 
     /*
@@ -88,43 +132,10 @@ export class FileEditor extends React.Component<IFileEditorProps, IState> {
   }
 
   componentWillUnmount() {
-    if (this.editor) {
-      const model = this.editor.getModel();
-      if (model && model.original) {
-        model.original.dispose();
-        model.modified.dispose();
-      }
-      this.editor.dispose();
-      this.navigator.dispose();
-    }
+    this.disposeEditor();
   }
 
-  private getFarItems() {
-    return [
-      {
-        key: 'renderSideBySide',
-        name: this.state.renderSideBySide ? 'Inline Diff' : 'Side-By-Side Diff',
-        ariaLabel: 'Diff Layout',
-        iconProps: {
-          iconName: this.state.renderSideBySide ? 'DiffInline' : 'DiffSideBySide',
-        },
-        onClick: () => {
-          this.setState({ renderSideBySide: !this.state.renderSideBySide });
-          //TODO this doesn't update the component. Need
-        }
-      },
-    ];
-  };
-
   render() {
-    return (
-      <>
-        <CommandBar
-            items={[]}
-            farItems={this.getFarItems()}
-          />
-        <div ref={this.containerRef} />
-      </>
-    );
+    return <div ref={this.containerRef} />;
   }
 }
