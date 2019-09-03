@@ -78,7 +78,7 @@ export const createProvider: DiffProviderFactory = async (args: string[], cwd: s
     }
 
     try {
-        console.log(`GitProvider found repository at ${repoRootDir}`);
+        console.debug(`GitProvider found repository at ${repoRootDir}`);
         const repo = await Git.Repository.open(repoRootDir);
         return new GitPlugin(repo, args);
     } catch (error) {

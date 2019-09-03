@@ -3,6 +3,10 @@ import * as path from "path";
 import * as isDev from "electron-is-dev";
 import { getProviders } from "./getProviders";
 
+if (!isDev) {
+    console.debug = () => {};
+}
+
 const providers = getProviders();
 
 let mainWindow: BrowserWindow | null;

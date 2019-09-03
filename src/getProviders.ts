@@ -21,9 +21,8 @@ export const getProviders = () => {
             const pkg = require(packageJsonPath);
             const mainFileFullPath = path.join(providerDir, pkg.main);
             if (pkg.main && fs.existsSync(mainFileFullPath)) {
-                console.log(`Adding provider ${mainFileFullPath}`);
+                console.debug(`Adding provider ${mainFileFullPath}`);
                 const extension = require(mainFileFullPath);
-                console.log(extension);
                 if (extension && extension.createProvider !== undefined)
                 providerFactories.push(extension.createProvider);
             }
