@@ -1,6 +1,6 @@
 import * as Git from 'nodegit';
 import { IChangeList } from '../DataStructures/IChangeList';
-import { IProvider, ProviderFactory } from '../DataStructures/IProvider';
+import { IDiffProvider, DiffProviderFactory } from '../DataStructures/IDiffProvider';
 import { readFile } from 'fs';
 import * as path from 'path';
 import { IFile } from '../DataStructures/IFile';
@@ -18,7 +18,7 @@ const readFileAsync = async (filePath: string, encoding: string = 'utf8'): Promi
     })
 }
 
-class GitPlugin implements IProvider {
+class GitPlugin implements IDiffProvider {
     constructor(private readonly repo: Git.Repository, private readonly args: string[]) {
     }
 
@@ -68,7 +68,7 @@ class GitPlugin implements IProvider {
     };
 }
 
-const factory: ProviderFactory = async (args: string[], cwd: string): Promise<IProvider | undefined> => {
+export const createProvider: DiffProviderFactory = async (args: string[], cwd: string): Promise<IDiffProvider | undefined> => {
     let repoRootDir;
     try {
         const gitDir = (await Git.Repository.discover(cwd, 0, null as any)) as any as string;
@@ -87,5 +87,3 @@ const factory: ProviderFactory = async (args: string[], cwd: string): Promise<IP
 
     return undefined;
 };
-
-export default factory;

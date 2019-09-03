@@ -1,7 +1,7 @@
 import { IChangeList } from "../DataStructures/IChangeList";
-import { IProvider } from "../DataStructures/IProvider";
+import { IDiffProvider } from "../DataStructures/IDiffProvider";
 
-export class StubProvider implements IProvider {
+export class StubProvider implements IDiffProvider {
     public async getChanges(): Promise<IChangeList[]> {
         return require(`./stubChange.json`);
     };

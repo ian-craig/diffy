@@ -1,5 +1,5 @@
 {
-  "name": "monaco-diff",
+  "name": "diffy",
   "description": "A simple diff tool built on the Monaco code editor",
   "author": "ian-craig",
   "version": "0.1.0",
@@ -27,7 +27,7 @@
   "homepage": ".",
   "main": "build/electron.js",
   "build": {
-    "appId": "com.electron.monacodiff"
+    "appId": "com.electron.diffy"
   },
   "scripts": {
     "react-start": "react-scripts start",

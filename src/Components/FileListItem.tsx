@@ -21,7 +21,7 @@ const changeType = (fileCompare: IFileCompare): string => {
         if (fileCompare.left.content === fileCompare.right.content) {
             changeType = "Rename";
         } else {
-            changeType = "Rename + Edit";
+            changeType = "Rename+Edit";
         }
     } else {
         if (fileCompare.left.content === fileCompare.right.content) {

@@ -2,7 +2,7 @@ import React from 'react';
 import SplitPane from 'react-split-pane';
 
 import { IFileCompare } from '../DataStructures/IFileCompare';
-import { IProvider } from '../DataStructures/IProvider';
+import { IDiffProvider } from '../DataStructures/IDiffProvider';
 import { IChangeList } from '../DataStructures/IChangeList';
 import { ChangeListPane } from './ChangeListPane';
 import { FilePane } from './FilePane';
@@ -10,7 +10,7 @@ import { FilePane } from './FilePane';
 import './App.css';
 
 export interface IAppProps {
-  provider: IProvider;
+  provider: IDiffProvider;
 }
 
 interface IState {

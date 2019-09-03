@@ -32,4 +32,6 @@
 
 .file-list-item-type {
     width: 80px;
+    font-size: 11px;
+    text-align: right;
 }
