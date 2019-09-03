@@ -3,6 +3,8 @@ import { IChangeList } from '../DataStructures/IChangeList';
 import { IProvider, ProviderFactory } from '../DataStructures/IProvider';
 import { readFile } from 'fs';
 import * as path from 'path';
+import { IFile } from '../DataStructures/IFile';
+const shortHash = require('short-hash');
 
 const readFileAsync = async (filePath: string, encoding: string = 'utf8'): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -20,7 +22,7 @@ class GitPlugin implements IProvider {
     constructor(private readonly repo: Git.Repository, private readonly args: string[]) {
     }
 
-    private async getFileInfo(diffFile: Git.DiffFile, readFromFile: boolean = false) {
+    private async getFileInfo(diffFile: Git.DiffFile, readFromFile: boolean = false): Promise<IFile | undefined> {
         if (diffFile.size() === 0) {
             // This was a deletion (if left) or addition (if right)
             return undefined;
@@ -31,6 +33,7 @@ class GitPlugin implements IProvider {
             this.repo.getBlob(diffFile.id()).then(blob => blob.content().toString());
 
         return {
+            id: readFromFile ? shortHash(diffFile.path()) : diffFile.id().tostrS(),
             path: diffFile.path(),
             content: await contentPromise,
         };
@@ -39,10 +42,12 @@ class GitPlugin implements IProvider {
     public async getChanges(): Promise<IChangeList[]> {
         const changeLists: IChangeList[] = [
             {
+                id: "staged",
                 name: "Staged",
                 files: [],
             },
             {
+                id: "unstaged",
                 name: "Unstaged",
                 files: [],
             },

@@ -3,6 +3,10 @@ import * as monaco from 'monaco-editor';
 import { IFileCompare } from '../DataStructures/IFileCompare';
 import { IFile } from '../DataStructures/IFile';
 
+export const isFileDiff = (fileCompare: IFileCompare | undefined): boolean => {
+  return fileCompare !== undefined && fileCompare.left !== undefined && fileCompare.right !== undefined;
+};
+
 export interface IFileEditorProps {
   width: number;
   height: number;
@@ -14,10 +18,6 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   private containerRef = React.createRef<HTMLDivElement>();
   private editor!: monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
   private diffNavigator?:  monaco.editor.IDiffNavigator;
-
-  private get isDiff(): boolean {
-    return this.props.file !== undefined && this.props.file.left !== undefined && this.props.file.right !== undefined;
-  }
 
   private createModels() {
     this.disposeEditor();
@@ -31,7 +31,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
       throw new Error("Expected container to be initialized.");
     }
 
-    if (this.isDiff) {
+    if (isFileDiff(this.props.file)) {
       this.editor = monaco.editor.createDiffEditor(containerElement, {
         renderSideBySide: this.props.renderSideBySide
       });
@@ -115,7 +115,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   }
 
   componentDidUpdate(prevProps: IFileEditorProps) {
-    if (this.props.renderSideBySide != prevProps.renderSideBySide || this.props.file !== prevProps.file) {
+    if (this.props.renderSideBySide !== prevProps.renderSideBySide || this.props.file !== prevProps.file) {
       this.createModels();
       return;
     }

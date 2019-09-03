@@ -1,7 +1,7 @@
 import React from 'react';
 import { IFileCompare } from '../DataStructures/IFileCompare';
-import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
-import { FileEditor } from './FileEditor';
+import { ICommandBarItemProps, CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
+import { isFileDiff, FileEditor } from './FileEditor';
 
 export interface IFilePaneProps {
   width: number;
@@ -23,7 +23,8 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
     }
   }
 
-  private getFarItems() {
+  private getFarItems(): ICommandBarItemProps[] {
+    const isDiff = isFileDiff(this.props.file);
     return [
       {
         key: 'renderSideBySide',
@@ -32,6 +33,7 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
         iconProps: {
           iconName: this.state.renderSideBySide ? 'DiffInline' : 'DiffSideBySide',
         },
+        disabled: !isDiff,
         onClick: () => {
           this.setState({ renderSideBySide: !this.state.renderSideBySide });
           //TODO this doesn't update the component. Need

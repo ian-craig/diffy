@@ -3,6 +3,7 @@ import { IChangeList } from '../DataStructures/IChangeList';
 import { IFileCompare } from '../DataStructures/IFileCompare';
 import './FileList.css';
 import { IFile } from '../DataStructures/IFile';
+import { FileListItem } from './FileListItem';
 
 const List = require('react-list-select').default;
 
@@ -42,9 +43,8 @@ export class FileList extends React.Component<IFileListProps, IState> {
             items.push(<div key={`cl-${cIndex}-title`}>{cl.name}</div>);
 
             cl.files.forEach((f, fIndex) => {
-                const path = f.right !== undefined ? f.right.path : (f.left as IFile).path;
                 this.itemMap.set(items.length, f);
-                items.push(<div key={`cl-${cIndex}-${fIndex}`}>{path}</div>);
+                items.push(<FileListItem fileCompare={f} changelist={cl} />);
             });
         });
 

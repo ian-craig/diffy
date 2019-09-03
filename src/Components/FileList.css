@@ -5,11 +5,10 @@ ul.react-list-select {
 	list-style: none;
 	padding: 0;
     margin: 0;
-    width: 100%;
+	width: 100%;
 }
 
 .react-list-select--item {
-	padding: 0.3em 0.6em;
 	cursor: pointer;
 	position: relative;
 	-webkit-user-select: none;
@@ -17,6 +16,8 @@ ul.react-list-select {
 	-ms-user-select: none;
 	-o-user-select: none;
     user-select: none;
+    padding: 0 6px;
+    line-height: 26px;
 }
 
 .react-list-select--item:hover {
@@ -27,13 +28,12 @@ ul.react-list-select {
 	background: #d7e7ff;
 }
 
-
 /* Add some style to the list */
 
 .react-list-select--item.is-disabled {
 	cursor: default;
-    background: #ddd;
-    border-bottom: solid 1px #aaa;
+	background: #ddd;
+	border-bottom: solid 1px rgba(0, 0, 0, 0.2);
 }
 
 .react-list-select:focus .react-list-select--item.is-focused::before,

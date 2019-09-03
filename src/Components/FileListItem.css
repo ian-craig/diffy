@@ -1,0 +1,35 @@
+.file-list-item {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.file-list-item-left {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+.file-list-item-buttons,
+.file-list-item-type {
+    padding-left: 5px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.file-list-item-buttons {
+    display: none;
+}
+.file-list-item:hover .file-list-item-buttons {
+    display: inherit;
+}
+
+.file-list-item-buttons .ms-Button {
+    height: 26px;
+    width: 26px;
+}
+
+.file-list-item-type {
+    width: 80px;
+}
