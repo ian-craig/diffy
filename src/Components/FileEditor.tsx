@@ -1,16 +1,15 @@
 import React from 'react';
 import * as monaco from 'monaco-editor';
-import { IFileCompare } from '../DataStructures/IFileCompare';
-import { IFile } from '../DataStructures/IFile';
+import { IDiff, IEditDiff } from '../DataStructures/IDiff';
 
-export const isFileDiff = (fileCompare: IFileCompare | undefined): boolean => {
+export const isFileDiff = (fileCompare: IDiff | undefined): fileCompare is IEditDiff => {
   return fileCompare !== undefined && fileCompare.left !== undefined && fileCompare.right !== undefined;
 };
 
 export interface IFileEditorProps {
   width: number;
   height: number;
-  file: IFileCompare | undefined;
+  file: IDiff | undefined;
   renderSideBySide: boolean;
 }
 
@@ -99,7 +98,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
         modified: monaco.editor.createModel(this.props.file.right.content, "text/plain")
       });
     } else {
-      const file = (this.props.file.left || this.props.file.right) as IFile;
+      const file = this.props.file.left || this.props.file.right;
       (this.editor as monaco.editor.IStandaloneCodeEditor).setModel(
         monaco.editor.createModel(file.content, "text/plain")
       );

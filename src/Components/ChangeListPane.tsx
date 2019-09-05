@@ -1,12 +1,12 @@
 import React from 'react';
 import { IChangeList } from '../DataStructures/IChangeList';
-import { IFileCompare } from '../DataStructures/IFileCompare';
+import { IDiff } from '../DataStructures/IDiff';
 import { FileList } from './FileList';
 import { CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 
 export interface IChangeListPaneProps {
     changeLists: IChangeList[];
-    onFileChange: (file: IFileCompare) => void;
+    onFileChange: (file: IDiff) => void;
     refresh: () => void;
 }
 

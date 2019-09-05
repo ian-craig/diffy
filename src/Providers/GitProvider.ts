@@ -3,7 +3,8 @@ import { IChangeList } from '../DataStructures/IChangeList';
 import { IDiffProvider, DiffProviderFactory } from '../DataStructures/IDiffProvider';
 import { readFile } from 'fs';
 import * as path from 'path';
-import { IFile } from '../DataStructures/IFile';
+import { IFileSpec } from '../DataStructures/IFile';
+import { IDiffSpec } from '../DataStructures/IDiff';
 const shortHash = require('short-hash');
 
 const readFileAsync = async (filePath: string, encoding: string = 'utf8'): Promise<string> => {
@@ -22,20 +23,20 @@ class GitPlugin implements IDiffProvider {
     constructor(private readonly repo: Git.Repository, private readonly args: string[]) {
     }
 
-    private async getFileInfo(diffFile: Git.DiffFile, readFromFile: boolean = false): Promise<IFile | undefined> {
+    private async getFileInfo(diffFile: Git.DiffFile, readFromFile: boolean = false): Promise<IFileSpec | undefined> {
         if (diffFile.size() === 0) {
             // This was a deletion (if left) or addition (if right)
             return undefined;
         }
 
-        const contentPromise = readFromFile ?
-            readFileAsync(path.join(this.repo.workdir(), diffFile.path())) :
-            this.repo.getBlob(diffFile.id()).then(blob => blob.content().toString());
+        const getContent = readFromFile ?
+            () => readFileAsync(path.join(this.repo.workdir(), diffFile.path())) :
+            () => this.repo.getBlob(diffFile.id()).then(blob => blob.content().toString());
 
         return {
             id: readFromFile ? shortHash(diffFile.path()) : diffFile.id().tostrS(),
             path: diffFile.path(),
-            content: await contentPromise,
+            getContent,
         };
     };
 
@@ -59,8 +60,11 @@ class GitPlugin implements IDiffProvider {
                     const [left, right] = await Promise.all([
                         this.getFileInfo((diff.oldFile as any)()),
                         this.getFileInfo((diff.newFile as any)(), index === 1),
-                    ])
-                    changeLists[index].files.push({ left, right });
+                    ]);
+                    if (left === undefined && right === undefined) {
+                        throw new Error("Both sides of diff are undefined");
+                    }
+                    changeLists[index].files.push({ left, right } as IDiffSpec);
                 }
             }));
         }

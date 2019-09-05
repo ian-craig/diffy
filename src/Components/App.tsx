@@ -1,7 +1,7 @@
 import React from 'react';
 import SplitPane from 'react-split-pane';
 
-import { IFileCompare } from '../DataStructures/IFileCompare';
+import { IDiff } from '../DataStructures/IDiff';
 import { IDiffProvider } from '../DataStructures/IDiffProvider';
 import { IChangeList } from '../DataStructures/IChangeList';
 import { ChangeListPane } from './ChangeListPane';
@@ -16,7 +16,7 @@ export interface IAppProps {
 interface IState {
   codeWidth: number;
   codeHeight: number;
-  selectedFile: IFileCompare | undefined;
+  selectedFile: IDiff | undefined;
   changeLists: IChangeList[];
 }
 
@@ -34,10 +34,8 @@ class App extends React.Component<IAppProps, IState> {
     };
   }
 
-  private readonly onFileChange = (file: IFileCompare) => {
-    this.setState({
-      selectedFile: file,
-    });
+  private readonly onFileChange = async (selectedFile: IDiff) => {
+    this.setState({ selectedFile });
   }
 
   private readonly refreshChanges = () => {

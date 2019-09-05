@@ -1,12 +1,12 @@
 import React from 'react';
-import { IFileCompare } from '../DataStructures/IFileCompare';
+import { IDiff } from '../DataStructures/IDiff';
 import { ICommandBarItemProps, CommandBar } from 'office-ui-fabric-react/lib/CommandBar';
 import { isFileDiff, FileEditor } from './FileEditor';
 
 export interface IFilePaneProps {
   width: number;
   height: number;
-  file: IFileCompare | undefined;
+  file: IDiff | undefined;
 }
 
 interface IState {

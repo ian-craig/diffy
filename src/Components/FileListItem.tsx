@@ -1,53 +1,53 @@
 import React from 'react';
-import { IFile } from '../DataStructures/IFile';
 import { IChangeList } from '../DataStructures/IChangeList';
 import { IconButton } from 'office-ui-fabric-react/lib/Button';
-import { IFileCompare } from '../DataStructures/IFileCompare';
+import { IDiffSpec, IDiff } from '../DataStructures/IDiff';
 
 import "./FileListItem.css";
 
 export interface IFileListItemProps {
     changelist: IChangeList;
-    fileCompare: IFileCompare;
+    diffSpec: IDiffSpec;
+    diff?: IDiff;
 }
 
-const changeType = (fileCompare: IFileCompare): string => {
-    let changeType;
+const diffType = (fileCompare: IDiff): string => {
+    let diffType;
     if (fileCompare.right === undefined) {
-        changeType = "Delete";
+        diffType = "Delete";
     } else if (fileCompare.left === undefined) {
-        changeType = "Add";
+        diffType = "Add";
     } else if (fileCompare.left.path !== fileCompare.right.path) {
         if (fileCompare.left.content === fileCompare.right.content) {
-            changeType = "Rename";
+            diffType = "Rename";
         } else {
-            changeType = "Rename+Edit";
+            diffType = "Rename+Edit";
         }
     } else {
         if (fileCompare.left.content === fileCompare.right.content) {
-            changeType = "Unchanged";
+            diffType = "Unchanged";
         } else if (fileCompare.left.content.replace(/\s/g, "") === fileCompare.right.content.replace(/\s/g, "")) {
-            changeType = "Whitespace";
+            diffType = "Whitespace";
         } else {
-            changeType = "Edit";
+            diffType = "Edit";
         }
     }
-    return changeType;
+    return diffType;
 };
 
-export const FileListItem = ({ fileCompare, changelist }: IFileListItemProps) => {
-    const file = fileCompare.right !== undefined ? fileCompare.right : fileCompare.left as IFile;
+export const FileListItem = ({ diffSpec, changelist, diff }: IFileListItemProps) => {
+    const fileSpec = diffSpec.right !== undefined ? diffSpec.right : diffSpec.left;
     
     return (
-        <div key={`${changelist.id}-${file.id}`} className="file-list-item">
+        <div key={`${changelist.id}-${fileSpec.id}`} className="file-list-item">
             <div className="file-list-item-left">
-                {file.path}
+                {fileSpec.path}
             </div>
             <div className="file-list-item-buttons">
                 <IconButton iconProps={{ iconName: 'Undo' }} title="Revert" ariaLabel="Revert" />
             </div>
             <div className="file-list-item-type">
-                {changeType(fileCompare)}
+                {diff ? diffType(diff) : null}
             </div>
         </div>
     );

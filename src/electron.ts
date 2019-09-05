@@ -1,4 +1,4 @@
-import { app, BrowserWindow }from "electron";
+import { app, BrowserWindow, screen }from "electron";
 import * as path from "path";
 import * as isDev from "electron-is-dev";
 import { getProviders } from "./getProviders";
@@ -23,11 +23,14 @@ const createWindow = async () => {
     }
 
     mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 800,
+        ...screen.getPrimaryDisplay().size,
         webPreferences: {
             nodeIntegration: true
-        }
+        },
+        show: false,
+    });
+    mainWindow.on('ready-to-show', () => {
+        mainWindow!.maximize();
     });
     mainWindow.loadURL(
         isDev
