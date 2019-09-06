@@ -1,3 +1,9 @@
+#file-list {
+	overflow-x: hidden;
+	overflow-y: auto;
+	height: calc(100% - 31px);
+}
+
 ul.react-list-select {
 	display: inline-block;
 	position: relative;

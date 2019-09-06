@@ -6,6 +6,10 @@ export const isFileDiff = (fileCompare: IDiff | undefined): fileCompare is IEdit
   return fileCompare !== undefined && fileCompare.left !== undefined && fileCompare.right !== undefined;
 };
 
+const baseEditorOptions: monaco.editor.IEditorOptions = {
+  fontSize: 12,
+};
+
 export interface IFileEditorProps {
   width: number;
   height: number;
@@ -32,6 +36,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
 
     if (isFileDiff(this.props.file)) {
       this.editor = monaco.editor.createDiffEditor(containerElement, {
+        ...baseEditorOptions,
         renderSideBySide: this.props.renderSideBySide
       });
   
@@ -41,7 +46,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
       });
 
     } else {
-      this.editor = monaco.editor.create(containerElement);
+      this.editor = monaco.editor.create(containerElement, baseEditorOptions);
     }
    
     this.updateModel();

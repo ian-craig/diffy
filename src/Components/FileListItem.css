@@ -13,7 +13,7 @@
 }
 .file-list-item-buttons,
 .file-list-item-type {
-    padding-left: 5px;
+    padding-left: 4px;
     flex-grow: 0;
     flex-shrink: 0;
 }
@@ -31,7 +31,6 @@
 }
 
 .file-list-item-type {
-    width: 80px;
-    font-size: 11px;
-    text-align: right;
+    width: 65px;
+    font-size: 10px;
 }

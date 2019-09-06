@@ -92,7 +92,7 @@ export class FileList extends React.Component<IFileListProps, IState> {
 
     public render() {
         return (
-            <div style={{overflow: "hidden" }}>
+            <div id="file-list">
                 <List
                     items={this.state.items}
                     selected={this.state.selected}

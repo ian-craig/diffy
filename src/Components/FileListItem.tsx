@@ -32,7 +32,7 @@ const diffType = (fileCompare: IDiff): string => {
             diffType = "Edit";
         }
     }
-    return diffType;
+    return "Rename+Edit";
 };
 
 export const FileListItem = ({ diffSpec, changelist, diff }: IFileListItemProps) => {
