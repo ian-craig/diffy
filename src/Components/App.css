@@ -1,6 +1,6 @@
 .Resizer {
   background: #000;
-  opacity: .2;
+  opacity: 0.2;
   z-index: 1;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -42,10 +42,10 @@
   border-right: 5px solid rgba(0, 0, 0, 0.5);
 }
 .Resizer.disabled {
-cursor: not-allowed;
+  cursor: not-allowed;
 }
 .Resizer.disabled:hover {
-border-color: transparent;
+  border-color: transparent;
 }
 
 .ms-CommandBar {

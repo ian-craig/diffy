@@ -1,6 +1,6 @@
-import React from 'react';
-import * as monaco from 'monaco-editor';
-import { IDiff, IEditDiff } from '../DataStructures/IDiff';
+import React from "react";
+import * as monaco from "monaco-editor";
+import { IDiff, IEditDiff } from "../DataStructures/IDiff";
 
 export const isFileDiff = (fileCompare: IDiff | undefined): fileCompare is IEditDiff => {
   return fileCompare !== undefined && fileCompare.left !== undefined && fileCompare.right !== undefined;
@@ -10,8 +10,8 @@ const baseEditorOptions: monaco.editor.IEditorOptions = {
   fontSize: 12,
   readOnly: true,
   scrollBeyondLastLine: false,
-  renderWhitespace: 'all', //TODO Make this a settings
-  wordWrap: 'off', //TODO Make this a settings
+  renderWhitespace: "all", //TODO Make this a settings
+  wordWrap: "off", //TODO Make this a settings
   //theme: 'vs-dark', //TODO Make this a settings
 };
 
@@ -25,7 +25,7 @@ export interface IFileEditorProps {
 export class FileEditor extends React.Component<IFileEditorProps> {
   private containerRef = React.createRef<HTMLDivElement>();
   private editor!: monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
-  private diffNavigator?:  monaco.editor.IDiffNavigator;
+  private diffNavigator?: monaco.editor.IDiffNavigator;
 
   private createModels() {
     this.disposeEditor();
@@ -45,16 +45,15 @@ export class FileEditor extends React.Component<IFileEditorProps> {
         renderSideBySide: this.props.renderSideBySide,
         ignoreTrimWhitespace: false, //TODO Make this a settings
       });
-  
+
       this.diffNavigator = monaco.editor.createDiffNavigator(this.editor, {
         followsCaret: true, // resets the navigator state when the user selects something in the editor
-        ignoreCharChanges: true // jump from line to line
+        ignoreCharChanges: true, // jump from line to line
       });
-
     } else {
       this.editor = monaco.editor.create(containerElement, baseEditorOptions);
     }
-   
+
     this.updateModel();
 
     this.editor.layout({ width: this.props.width, height: this.props.height });
@@ -80,9 +79,9 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   private disposeModels() {
     if (this.editor) {
       const model = this.editor.getModel();
-      if (model && 'original' in model) {
+      if (model && "original" in model) {
         if (model.original) {
-        model.original.dispose();
+          model.original.dispose();
         }
         if (model.modified) {
           model.modified.dispose();
@@ -94,7 +93,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   }
 
   componentDidMount() {
-    this.createModels()
+    this.createModels();
   }
 
   private updateModel() {
@@ -106,12 +105,16 @@ export class FileEditor extends React.Component<IFileEditorProps> {
     if (this.props.file.left !== undefined && this.props.file.right !== undefined) {
       (this.editor as monaco.editor.IStandaloneDiffEditor).setModel({
         original: monaco.editor.createModel(this.props.file.left.content),
-        modified: monaco.editor.createModel(this.props.file.right.content, undefined, monaco.Uri.file(this.props.file.right.path))
+        modified: monaco.editor.createModel(
+          this.props.file.right.content,
+          undefined,
+          monaco.Uri.file(this.props.file.right.path),
+        ),
       });
     } else {
       const file = this.props.file.left || this.props.file.right;
       (this.editor as monaco.editor.IStandaloneCodeEditor).setModel(
-        monaco.editor.createModel(file.content, undefined, monaco.Uri.file(file.path))
+        monaco.editor.createModel(file.content, undefined, monaco.Uri.file(file.path)),
       );
     }
 

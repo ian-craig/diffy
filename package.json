@@ -38,10 +38,12 @@
     "electron-build": "electron-builder",
     "release": "yarn react-build && yarn run compile && electron-builder --publish=always",
     "build": "yarn react-build && yarn run compile && yarn electron-build",
+    "build:local": "yarn react-build && yarn run compile && yarn electron-build --dir",
     "compile": "tsc -p electron-tsconfig.json --noEmit false",
     "start": "concurrently \"yarn compile --watch\" \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron": "electron .",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "prettier": "prettier --write --ignore-path .gitignore **/*.{js,ts,tsx,css,json,md} "
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -62,6 +64,20 @@
     "concurrently": "^4.1.2",
     "electron": "^6.0.3",
     "electron-builder": "^21.2.0",
+    "husky": "^3.0.5",
+    "lint-staged": "^9.2.5",
+    "prettier": "^1.18.2",
     "wait-on": "^3.3.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }

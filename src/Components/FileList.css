@@ -1,65 +1,65 @@
 #file-list {
-	overflow-x: hidden;
-	overflow-y: auto;
-	height: calc(100% - 31px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: calc(100% - 31px);
 }
 
 ul.react-list-select {
-	display: inline-block;
-	position: relative;
-	outline: none;
-	list-style: none;
-	padding: 0;
-    margin: 0;
-	width: 100%;
+  display: inline-block;
+  position: relative;
+  outline: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
 .react-list-select--item {
-	cursor: pointer;
-	position: relative;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-o-user-select: none;
-    user-select: none;
-    padding: 0 6px;
-    line-height: 26px;
+  cursor: pointer;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  padding: 0 6px;
+  line-height: 26px;
 }
 
 .react-list-select--item:hover {
-    background: #f5f9ff;
+  background: #f5f9ff;
 }
 
 .react-list-select--item.is-selected {
-	background: #d7e7ff;
+  background: #d7e7ff;
 }
 
 /* Add some style to the list */
 
 .react-list-select--item.is-disabled {
-	cursor: default;
-	background: #ddd;
-	border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+  cursor: default;
+  background: #ddd;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.2);
 }
 
 .react-list-select:focus .react-list-select--item.is-focused::before,
 .react-list-select:focus .react-list-select--item.is-focused::after {
-	content: '';
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 2px;
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
 }
 .react-list-select:focus .react-list-select--item.is-focused::before {
-	left: 0;
+  left: 0;
 }
 .react-list-select:focus .react-list-select--item.is-focused::after {
-	right: 0;
+  right: 0;
 }
 
 .context-menu .react-list-select {
-	padding: 0.3em 0;
+  padding: 0.3em 0;
 }
 .context-menu .react-list-select--item {
-	font-size: 0.8125em;
+  font-size: 0.8125em;
 }

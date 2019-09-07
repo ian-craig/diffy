@@ -7,10 +7,10 @@ import { IChangeList } from "./IChangeList";
 export type DiffProviderFactory = (args: string[], cwd: string) => Promise<IDiffProvider | undefined>;
 
 export interface IDiffProvider {
-    /**
-     * Fetch changeslists for a given command line input.
-     * @param args Command line arguments (not including the program name)
-     * @param cwd The directory the tool was invoked in
-     */
-    getChanges(): Promise<IChangeList[]>;
+  /**
+   * Fetch changeslists for a given command line input.
+   * @param args Command line arguments (not including the program name)
+   * @param cwd The directory the tool was invoked in
+   */
+  getChanges(): Promise<IChangeList[]>;
 }
