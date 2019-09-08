@@ -13,4 +13,9 @@ export interface IDiffProvider {
    * @param cwd The directory the tool was invoked in
    */
   getChanges(): Promise<IChangeList[]>;
+
+  /**
+   * The title to show on the window / and above the changelists
+   */
+  title?: string;
 }

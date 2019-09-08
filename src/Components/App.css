@@ -48,7 +48,38 @@
   border-color: transparent;
 }
 
-.ms-CommandBar {
+.ms-CommandBar,
+.custom-CommandBar {
   height: 30px;
   border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  display: flex;
+  line-height: 30px;
+}
+
+.custom-CommandBar .primary {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-grow: 1;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.custom-CommandBar .secondary {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  align-items: stretch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-CommandBar .text {
+  padding: 0 4px;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

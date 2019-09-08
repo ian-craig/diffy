@@ -19,8 +19,12 @@ const readFileAsync = async (filePath: string, encoding: string = "utf8"): Promi
   });
 };
 
-class GitPlugin implements IDiffProvider {
-  constructor(private readonly repo: Git.Repository, private readonly args: string[]) {}
+class GitProvider implements IDiffProvider {
+  public readonly title: string;
+
+  constructor(private readonly repo: Git.Repository, private readonly args: string[]) {
+    this.title = `Git Status - ${repo.workdir()}`;
+  }
 
   private async getFileInfo(diffFile: Git.DiffFile, readFromFile: boolean = false): Promise<IFileSpec | undefined> {
     if (diffFile.size() === 0) {
@@ -88,7 +92,7 @@ export const createProvider: DiffProviderFactory = async (
   try {
     console.debug(`GitProvider found repository at ${repoRootDir}`);
     const repo = await Git.Repository.open(repoRootDir);
-    return new GitPlugin(repo, args);
+    return new GitProvider(repo, args);
   } catch (error) {
     console.error(error);
   }

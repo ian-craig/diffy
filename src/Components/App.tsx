@@ -69,6 +69,7 @@ class App extends React.Component<IAppProps, IState> {
       <div className="App">
         <SplitPane split="vertical" minSize={50} defaultSize={this.listWidth} onChange={this.onResize}>
           <ChangeListPane
+            title={this.props.provider.title || ""}
             changeLists={this.state.changeLists}
             onFileChange={this.onFileChange}
             refresh={this.refreshChanges}
