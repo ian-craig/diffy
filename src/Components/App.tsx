@@ -8,6 +8,7 @@ import { ChangeListPane } from "./ChangeListPane";
 import { FilePane } from "./FilePane";
 
 import "./App.css";
+import { SettingsStore } from "../Utils/SettingsStore";
 
 export interface IAppProps {
   provider: IDiffProvider;
@@ -22,6 +23,7 @@ interface IState {
 
 class App extends React.Component<IAppProps, IState> {
   private listWidth = 240;
+  private settingsStore = new SettingsStore();
 
   public constructor(props: IAppProps) {
     super(props);
@@ -71,7 +73,12 @@ class App extends React.Component<IAppProps, IState> {
             onFileChange={this.onFileChange}
             refresh={this.refreshChanges}
           />
-          <FilePane file={this.state.selectedFile} width={this.state.codeWidth} height={this.state.codeHeight} />
+          <FilePane
+            file={this.state.selectedFile}
+            width={this.state.codeWidth}
+            height={this.state.codeHeight}
+            settingsStore={this.settingsStore}
+          />
         </SplitPane>
       </div>
     );

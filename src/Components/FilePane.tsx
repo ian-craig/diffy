@@ -2,25 +2,32 @@ import React from "react";
 import { IDiff } from "../DataStructures/IDiff";
 import { ICommandBarItemProps, CommandBar } from "office-ui-fabric-react/lib/CommandBar";
 import { isFileDiff, FileEditor } from "./FileEditor";
+import { SettingsStore, ISettings } from "../Utils/SettingsStore";
 
 export interface IFilePaneProps {
   width: number;
   height: number;
   file: IDiff | undefined;
+  settingsStore: SettingsStore;
 }
 
-interface IState {
-  renderSideBySide: boolean;
-}
+type ISettingsInState = Pick<ISettings, "renderSideBySide">;
+
+interface IState extends ISettingsInState {}
 
 export class FilePane extends React.Component<IFilePaneProps, IState> {
   constructor(props: IFilePaneProps) {
     super(props);
 
     this.state = {
-      renderSideBySide: false, //TODO Persist settings in some store?
+      renderSideBySide: props.settingsStore.get("renderSideBySide"),
     };
   }
+
+  private setSetting = (newSettings: Partial<ISettingsInState>) => {
+    this.props.settingsStore.set(newSettings);
+    this.setState(newSettings as any);
+  };
 
   private getFarItems(): ICommandBarItemProps[] {
     const isDiff = isFileDiff(this.props.file);
@@ -33,10 +40,7 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
           iconName: this.state.renderSideBySide ? "DiffInline" : "DiffSideBySide",
         },
         disabled: !isDiff,
-        onClick: () => {
-          this.setState({ renderSideBySide: !this.state.renderSideBySide });
-          //TODO this doesn't update the component. Need
-        },
+        onClick: () => this.setSetting({ renderSideBySide: !this.state.renderSideBySide }),
       },
     ];
   }

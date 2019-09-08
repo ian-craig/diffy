@@ -2,6 +2,7 @@ import { app, BrowserWindow, screen } from "electron";
 import * as path from "path";
 import * as isDev from "electron-is-dev";
 import { getProviders } from "./getProviders";
+import * as ElectronStore from "electron-store";
 
 if (!isDev) {
   console.debug = () => {};
@@ -13,6 +14,10 @@ let mainWindow: BrowserWindow | null;
 const createWindow = async () => {
   const args = process.argv.slice(2);
   const cwd = process.cwd();
+
+  //@ts-ignore
+  global.store = new ElectronStore();
+
   for (const providerFactory of providers) {
     const plugin = await providerFactory(args, cwd);
     if (plugin !== undefined) {
