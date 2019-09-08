@@ -6,26 +6,28 @@ export const isFileDiff = (fileCompare: IDiff | undefined): fileCompare is IEdit
   return fileCompare !== undefined && fileCompare.left !== undefined && fileCompare.right !== undefined;
 };
 
-const baseEditorOptions: monaco.editor.IEditorOptions = {
-  fontSize: 12,
-  readOnly: true,
-  scrollBeyondLastLine: false,
-  renderWhitespace: "all", //TODO Make this a settings
-  wordWrap: "off", //TODO Make this a settings
-  //theme: 'vs-dark', //TODO Make this a settings
-};
-
 export interface IFileEditorProps {
   width: number;
   height: number;
   file: IDiff | undefined;
   renderSideBySide: boolean;
+  includeWhitespace: boolean;
 }
 
 export class FileEditor extends React.Component<IFileEditorProps> {
   private containerRef = React.createRef<HTMLDivElement>();
   private editor!: monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
   private diffNavigator?: monaco.editor.IDiffNavigator;
+
+  private baseEditorOptions(): monaco.editor.IEditorOptions {
+    return {
+      fontSize: 12,
+      readOnly: true,
+      scrollBeyondLastLine: false,
+      renderWhitespace: this.props.includeWhitespace ? "all" : "none",
+      //theme: 'vs-dark', //TODO Make this a settings
+    };
+  }
 
   private createModels() {
     this.disposeEditor();
@@ -41,9 +43,9 @@ export class FileEditor extends React.Component<IFileEditorProps> {
 
     if (isFileDiff(this.props.file)) {
       this.editor = monaco.editor.createDiffEditor(containerElement, {
-        ...baseEditorOptions,
+        ...this.baseEditorOptions(),
         renderSideBySide: this.props.renderSideBySide,
-        ignoreTrimWhitespace: false, //TODO Make this a settings
+        ignoreTrimWhitespace: !this.props.includeWhitespace,
       });
 
       this.diffNavigator = monaco.editor.createDiffNavigator(this.editor, {
@@ -51,7 +53,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
         ignoreCharChanges: true, // jump from line to line
       });
     } else {
-      this.editor = monaco.editor.create(containerElement, baseEditorOptions);
+      this.editor = monaco.editor.create(containerElement, this.baseEditorOptions());
     }
 
     this.updateModel();
@@ -128,7 +130,11 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   }
 
   componentDidUpdate(prevProps: IFileEditorProps) {
-    if (this.props.renderSideBySide !== prevProps.renderSideBySide || this.props.file !== prevProps.file) {
+    if (
+      this.props.renderSideBySide !== prevProps.renderSideBySide ||
+      this.props.includeWhitespace !== prevProps.includeWhitespace ||
+      this.props.file !== prevProps.file
+    ) {
       this.createModels();
       return;
     }

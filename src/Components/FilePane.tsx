@@ -11,7 +11,7 @@ export interface IFilePaneProps {
   settingsStore: SettingsStore;
 }
 
-type ISettingsInState = Pick<ISettings, "renderSideBySide">;
+type ISettingsInState = Pick<ISettings, "renderSideBySide" | "includeWhitespace">;
 
 interface IState extends ISettingsInState {}
 
@@ -20,7 +20,7 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
     super(props);
 
     this.state = {
-      renderSideBySide: props.settingsStore.get("renderSideBySide"),
+      ...props.settingsStore.getMultiple(["renderSideBySide", "includeWhitespace"]),
     };
   }
 
@@ -32,6 +32,15 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
   private getFarItems(): ICommandBarItemProps[] {
     const isDiff = isFileDiff(this.props.file);
     return [
+      {
+        key: "includeWhitespace",
+        name: "Include Whitespace",
+        ariaLabel: "Render Whitespace",
+        iconProps: {
+          iconName: "ImportMirrored",
+        },
+        onClick: () => this.setSetting({ includeWhitespace: !this.state.includeWhitespace }),
+      },
       {
         key: "renderSideBySide",
         name: this.state.renderSideBySide ? "Inline Diff" : "Side-By-Side Diff",
@@ -56,6 +65,7 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
           width={this.props.width}
           height={this.props.height - 31}
           renderSideBySide={this.state.renderSideBySide}
+          includeWhitespace={this.state.includeWhitespace}
         />
       </>
     );

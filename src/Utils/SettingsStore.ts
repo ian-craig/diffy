@@ -1,9 +1,11 @@
 export interface ISettings {
   renderSideBySide: boolean;
+  includeWhitespace: boolean;
 }
 
 const defaults: ISettings = {
   renderSideBySide: true,
+  includeWhitespace: true,
 };
 
 /**
@@ -32,6 +34,14 @@ export class SettingsStore {
   public getAll(): ISettings {
     const result: any = {};
     for (const key of Object.keys(defaults) as (keyof ISettings)[]) {
+      result[key] = this.get(key);
+    }
+    return result as ISettings;
+  }
+
+  public getMultiple<TKeys extends keyof ISettings>(keys: (keyof ISettings)[]): Pick<ISettings, TKeys> {
+    const result: any = {};
+    for (const key of keys) {
       result[key] = this.get(key);
     }
     return result as ISettings;
