@@ -3,17 +3,24 @@ import { IDiff } from "../DataStructures/IDiff";
 import { ICommandBarItemProps, CommandBar } from "office-ui-fabric-react/lib/CommandBar";
 import { isFileDiff, FileEditor } from "./FileEditor";
 import { SettingsStore, ISettings } from "../Utils/SettingsStore";
+import { IChangeList, ActionType } from "../DataStructures/IChangeList";
 
 export interface IFilePaneProps {
   width: number;
   height: number;
   file: IDiff | undefined;
+  changeList: IChangeList | undefined;
   settingsStore: SettingsStore;
 }
 
 type ISettingsInState = Pick<ISettings, "renderSideBySide" | "includeWhitespace">;
 
 interface IState extends ISettingsInState {}
+
+const getSaveCallback = (changeList: IChangeList) => {
+  const action = (changeList.fileActions || []).find(a => a.type === ActionType.Save);
+  return action ? action.callback : undefined;
+};
 
 export class FilePane extends React.Component<IFilePaneProps, IState> {
   constructor(props: IFilePaneProps) {
@@ -55,18 +62,19 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
   }
 
   render() {
-    console.log("Render FilePane", this.state.renderSideBySide);
-
     return (
       <>
         <CommandBar items={[]} farItems={this.getFarItems()} />
-        <FileEditor
-          file={this.props.file}
-          width={this.props.width}
-          height={this.props.height - 31}
-          renderSideBySide={this.state.renderSideBySide}
-          includeWhitespace={this.state.includeWhitespace}
-        />
+        {this.props.file && this.props.changeList && (
+          <FileEditor
+            file={this.props.file}
+            saveCallback={getSaveCallback(this.props.changeList)}
+            width={this.props.width}
+            height={this.props.height - 31}
+            renderSideBySide={this.state.renderSideBySide}
+            includeWhitespace={this.state.includeWhitespace}
+          />
+        )}
       </>
     );
   }

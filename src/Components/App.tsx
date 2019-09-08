@@ -14,10 +14,15 @@ export interface IAppProps {
   provider: IDiffProvider;
 }
 
+interface ISelected {
+  file: IDiff | undefined;
+  changeList: IChangeList | undefined;
+}
+
 interface IState {
   codeWidth: number;
   codeHeight: number;
-  selectedFile: IDiff | undefined;
+  selected: ISelected;
   changeLists: IChangeList[];
 }
 
@@ -31,13 +36,13 @@ class App extends React.Component<IAppProps, IState> {
     this.state = {
       codeWidth: 0,
       codeHeight: 0,
-      selectedFile: undefined,
+      selected: { file: undefined, changeList: undefined },
       changeLists: [],
     };
   }
 
-  private readonly onFileChange = async (selectedFile: IDiff) => {
-    this.setState({ selectedFile });
+  private readonly onFileChange = async (file: IDiff, changeList: IChangeList) => {
+    this.setState({ selected: { file, changeList } });
   };
 
   private readonly refreshChanges = () => {
@@ -75,7 +80,7 @@ class App extends React.Component<IAppProps, IState> {
             refresh={this.refreshChanges}
           />
           <FilePane
-            file={this.state.selectedFile}
+            {...this.state.selected}
             width={this.state.codeWidth}
             height={this.state.codeHeight}
             settingsStore={this.settingsStore}

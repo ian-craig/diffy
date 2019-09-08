@@ -7,7 +7,7 @@ import { CommandBarButton } from "office-ui-fabric-react/lib/Button";
 export interface IChangeListPaneProps {
   title: string;
   changeLists: IChangeList[];
-  onFileChange: (file: IDiff) => void;
+  onFileChange: (file: IDiff, changeList: IChangeList) => void;
   refresh: () => void;
 }
 

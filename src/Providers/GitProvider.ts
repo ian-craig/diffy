@@ -1,23 +1,15 @@
 import * as Git from "nodegit";
-import { IChangeList } from "../DataStructures/IChangeList";
+import { IChangeList, ActionType } from "../DataStructures/IChangeList";
 import { IDiffProvider, DiffProviderFactory } from "../DataStructures/IDiffProvider";
-import { readFile } from "fs";
+import { readFile, writeFile } from "fs";
 import * as path from "path";
 import { IFileSpec } from "../DataStructures/IFile";
-import { IDiffSpec } from "../DataStructures/IDiff";
+import { IDiffSpec, IDiff } from "../DataStructures/IDiff";
 const shortHash = require("short-hash");
+import { promisify } from "util";
 
-const readFileAsync = async (filePath: string, encoding: string = "utf8"): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    readFile(filePath, { encoding }, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data.toString());
-      }
-    });
-  });
-};
+const readFileAsync = promisify(readFile);
+const writeFileAsync = promisify(writeFile);
 
 class GitProvider implements IDiffProvider {
   public readonly title: string;
@@ -33,7 +25,7 @@ class GitProvider implements IDiffProvider {
     }
 
     const getContent = readFromFile
-      ? () => readFileAsync(path.join(this.repo.workdir(), diffFile.path()))
+      ? () => readFileAsync(path.join(this.repo.workdir(), diffFile.path()), "utf8")
       : () => this.repo.getBlob(diffFile.id()).then(blob => blob.content().toString());
 
     return {
@@ -54,6 +46,13 @@ class GitProvider implements IDiffProvider {
         id: "unstaged",
         name: "Unstaged",
         files: [],
+        fileActions: [
+          {
+            type: ActionType.Save,
+            callback: (file: IDiff) =>
+              file.right ? writeFileAsync(file.right.path, file.right.content) : Promise.reject(),
+          },
+        ],
       },
     ];
     const statusFiles = await this.repo.getStatusExt();

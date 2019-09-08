@@ -11,7 +11,7 @@ const List = require("react-list-select").default;
 
 export interface IFileListProps {
   changeLists: IChangeList[];
-  onFileChange: (file: IDiff) => void;
+  onFileChange: (file: IDiff, changeList: IChangeList) => void;
 }
 
 interface IState {
@@ -86,8 +86,13 @@ export class FileList extends React.Component<IFileListProps, IState> {
       selected: [selectedIndex],
     });
 
-    const newFile = await this.fileContentStore.loadDiff(this.itemMap.get(selectedIndex) as IDiffSpec);
-    this.props.onFileChange(newFile);
+    const diffSpec = this.itemMap.get(selectedIndex) as IDiffSpec;
+    const file = await this.fileContentStore.loadDiff(diffSpec);
+    const changeList = this.props.changeLists.find(cl => cl.files.find(f => f === diffSpec) !== undefined);
+    if (changeList === undefined) {
+      throw new Error(`Failed to find file ${diffSpec} in any changelists`);
+    }
+    this.props.onFileChange(file, changeList);
   };
 
   public render() {

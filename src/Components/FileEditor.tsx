@@ -1,6 +1,7 @@
 import React from "react";
 import * as monaco from "monaco-editor";
 import { IDiff, IEditDiff } from "../DataStructures/IDiff";
+import { IFile } from "../DataStructures/IFile";
 
 export const isFileDiff = (fileCompare: IDiff | undefined): fileCompare is IEditDiff => {
   return fileCompare !== undefined && fileCompare.left !== undefined && fileCompare.right !== undefined;
@@ -9,7 +10,8 @@ export const isFileDiff = (fileCompare: IDiff | undefined): fileCompare is IEdit
 export interface IFileEditorProps {
   width: number;
   height: number;
-  file: IDiff | undefined;
+  file: IDiff;
+  saveCallback?: (file: IDiff) => Promise<void>;
   renderSideBySide: boolean;
   includeWhitespace: boolean;
 }
@@ -22,7 +24,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   private baseEditorOptions(): monaco.editor.IEditorOptions {
     return {
       fontSize: 12,
-      readOnly: true,
+      readOnly: this.props.file.right === undefined || this.props.saveCallback === undefined,
       scrollBeyondLastLine: false,
       renderWhitespace: this.props.includeWhitespace ? "all" : "none",
       //theme: 'vs-dark', //TODO Make this a settings
@@ -31,19 +33,16 @@ export class FileEditor extends React.Component<IFileEditorProps> {
 
   private createModels() {
     this.disposeEditor();
-
-    if (this.props.file === undefined) {
-      return;
-    }
-
     const containerElement = this.containerRef.current;
     if (containerElement === null) {
       throw new Error("Expected container to be initialized.");
     }
 
+    const options = this.baseEditorOptions();
+
     if (isFileDiff(this.props.file)) {
       this.editor = monaco.editor.createDiffEditor(containerElement, {
-        ...this.baseEditorOptions(),
+        ...options,
         renderSideBySide: this.props.renderSideBySide,
         ignoreTrimWhitespace: !this.props.includeWhitespace,
       });
@@ -53,7 +52,16 @@ export class FileEditor extends React.Component<IFileEditorProps> {
         ignoreCharChanges: true, // jump from line to line
       });
     } else {
-      this.editor = monaco.editor.create(containerElement, this.baseEditorOptions());
+      this.editor = monaco.editor.create(containerElement, options);
+    }
+
+    if (!options.readOnly) {
+      this.editor.addAction({
+        id: "save",
+        label: "Save File",
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S],
+        run: this.saveFile,
+      });
     }
 
     this.updateModel();
@@ -66,6 +74,25 @@ export class FileEditor extends React.Component<IFileEditorProps> {
     });
     */
   }
+
+  private readonly saveFile = (editor: monaco.editor.ICodeEditor) => {
+    if (this.props.saveCallback === undefined) {
+      return;
+    }
+    const file = this.props.file;
+    const newRightFile = {
+      ...(file.right as IFile),
+      content: editor.getValue(),
+    };
+    this.props
+      .saveCallback({
+        left: file.left,
+        right: newRightFile,
+      })
+      .then(() => {
+        file.right = newRightFile;
+      });
+  };
 
   private disposeEditor() {
     if (this.editor) {
@@ -100,10 +127,6 @@ export class FileEditor extends React.Component<IFileEditorProps> {
 
   private updateModel() {
     this.disposeModels();
-    if (this.props.file === undefined) {
-      return;
-    }
-
     if (this.props.file.left !== undefined && this.props.file.right !== undefined) {
       (this.editor as monaco.editor.IStandaloneDiffEditor).setModel({
         original: monaco.editor.createModel(this.props.file.left.content),
@@ -133,7 +156,8 @@ export class FileEditor extends React.Component<IFileEditorProps> {
     if (
       this.props.renderSideBySide !== prevProps.renderSideBySide ||
       this.props.includeWhitespace !== prevProps.includeWhitespace ||
-      this.props.file !== prevProps.file
+      this.props.file !== prevProps.file ||
+      this.props.saveCallback !== prevProps.saveCallback
     ) {
       this.createModels();
       return;
