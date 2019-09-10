@@ -3,11 +3,12 @@ import { IChangeList } from "../DataStructures/IChangeList";
 import { IDiffSpec, IDiff } from "../DataStructures/IDiff";
 import { FileListItem } from "./FileListItem";
 import { FileContentStore } from "../Utils/FileContentStore";
+import { GroupedList, IGroup } from "office-ui-fabric-react/lib/GroupedList";
+import { IColumn, DetailsRow } from "office-ui-fabric-react/lib/DetailsList";
+import { Selection, SelectionMode, SelectionZone } from "office-ui-fabric-react/lib/Selection";
 import PQueue from "p-queue";
 
 import "./FileList.css";
-
-const List = require("react-list-select").default;
 
 export interface IFileListProps {
   changeLists: IChangeList[];
@@ -16,13 +17,24 @@ export interface IFileListProps {
 
 interface IState {
   selected: number[];
-  items: JSX.Element[];
+  items: Item[];
   disabled: number[];
+  groups: IGroup[];
 }
+
+interface Item {
+  key: string;
+  changelist: IChangeList;
+  diffSpec: IDiffSpec;
+  diff?: IDiff;
+}
+
+const getId = (diffSpec: IDiffSpec) => (diffSpec.left ? diffSpec.left.id : diffSpec.right.id);
 
 export class FileList extends React.Component<IFileListProps, IState> {
   private itemMap = new Map<number, IDiffSpec>();
   private fileContentStore = new FileContentStore();
+  private _selection = new Selection();
 
   public constructor(props: IFileListProps) {
     super(props);
@@ -31,6 +43,7 @@ export class FileList extends React.Component<IFileListProps, IState> {
       selected: [],
       items: [],
       disabled: [],
+      groups: [],
     };
   }
 
@@ -42,23 +55,29 @@ export class FileList extends React.Component<IFileListProps, IState> {
     const queue = new PQueue({ concurrency: 10 });
 
     this.itemMap.clear();
-    const items: JSX.Element[] = [];
+    const items: Item[] = [];
     const disabled: number[] = [];
+    const groups: IGroup[] = [];
 
-    this.props.changeLists.forEach((cl, cIndex) => {
+    this.props.changeLists.forEach((changelist, cIndex) => {
       disabled.push(items.length);
-      items.push(<div key={`cl-${cIndex}-title`}>{cl.name}</div>);
+      groups.push({
+        key: changelist.id,
+        name: changelist.name,
+        startIndex: items.length,
+        count: changelist.files.length,
+      });
 
-      cl.files.forEach(ds => {
+      changelist.files.forEach(diffSpec => {
         const index = items.length;
 
-        this.itemMap.set(index, ds);
-        items.push(<FileListItem diffSpec={ds} changelist={cl} />);
+        this.itemMap.set(index, diffSpec);
+        items.push({ key: getId(diffSpec), diffSpec, changelist });
 
         // Asyncronously load the file
         queue.add(async () => {
-          const loadedFile = await this.fileContentStore.loadDiff(ds);
-          items[index] = <FileListItem diffSpec={ds} diff={loadedFile} changelist={cl} />;
+          const diff = await this.fileContentStore.loadDiff(diffSpec);
+          items[index] = { key: getId(diffSpec), diffSpec, changelist, diff };
           this.setState({ items });
         });
       });
@@ -66,8 +85,10 @@ export class FileList extends React.Component<IFileListProps, IState> {
 
     this.setState({
       items,
+      groups,
       disabled,
     });
+    this._selection.setItems(items);
 
     if (this.itemMap.size > 0) {
       this.onChange(Array.from(this.itemMap.keys())[0]);
@@ -95,16 +116,50 @@ export class FileList extends React.Component<IFileListProps, IState> {
     this.props.onFileChange(file, changeList);
   };
 
+  private columns: IColumn[] = [
+    {
+      key: "a",
+      name: "a",
+      minWidth: 1,
+      onRender: (item: Item, index?: number, column?: IColumn) => {
+        return <FileListItem {...item} />;
+      },
+    },
+  ];
+
+  private _onRenderCell = (
+    nestingDepth: number | undefined,
+    item: Item,
+    itemIndex: number | undefined,
+  ): JSX.Element => {
+    console.log("_onRenderCell", nestingDepth, item, itemIndex);
+    return (
+      <DetailsRow
+        columns={this.columns}
+        groupNestingDepth={nestingDepth}
+        item={item}
+        itemIndex={itemIndex || 0}
+        selection={this._selection}
+        selectionMode={SelectionMode.multiple}
+        compact={true}
+      />
+    );
+  };
+
   public render() {
+    console.log("Render", this.state.groups, this.state.items);
     return (
       <div id="file-list">
-        <List
-          items={this.state.items}
-          selected={this.state.selected}
-          disabled={this.state.disabled}
-          multiple={false}
-          onChange={this.onChange}
-        />
+        <SelectionZone selection={this._selection} selectionMode={SelectionMode.multiple}>
+          <GroupedList
+            items={this.state.items}
+            onRenderCell={this._onRenderCell}
+            selection={this._selection}
+            selectionMode={SelectionMode.multiple}
+            groups={this.state.groups}
+            compact={true}
+          />
+        </SelectionZone>
       </div>
     );
   }
