@@ -1,26 +1,19 @@
 import React from "react";
-import { IDiff } from "../DataStructures/IDiff";
 import { ICommandBarItemProps, CommandBar } from "office-ui-fabric-react/lib/CommandBar";
-import { isFileDiff, FileEditor } from "./FileEditor";
+import { FileEditor } from "./FileEditor";
 import { SettingsStore, ISettings } from "../Utils/SettingsStore";
-import { IChangeList, ActionType } from "../DataStructures/IChangeList";
+import { DiffModel } from "../Utils/DiffModel";
 
 export interface IFilePaneProps {
   width: number;
   height: number;
-  file: IDiff | undefined;
-  changeList: IChangeList | undefined;
+  diffModel: DiffModel | undefined;
   settingsStore: SettingsStore;
 }
 
 type ISettingsInState = Pick<ISettings, "renderSideBySide" | "includeWhitespace">;
 
 interface IState extends ISettingsInState {}
-
-const getSaveCallback = (changeList: IChangeList) => {
-  const action = (changeList.fileActions || []).find(a => a.type === ActionType.Save);
-  return action ? action.callback : undefined;
-};
 
 export class FilePane extends React.Component<IFilePaneProps, IState> {
   constructor(props: IFilePaneProps) {
@@ -36,8 +29,44 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
     this.setState(newSettings as any);
   };
 
+  private getNearItems(): ICommandBarItemProps[] {
+    const filePath = this.props.diffModel ? this.props.diffModel.filePath : "";
+    const items: ICommandBarItemProps[] = [
+      {
+        key: "includeWhitespace",
+        name: "Include Whitespace",
+        ariaLabel: "Render Whitespace",
+        iconProps: {
+          iconName: "ImportMirrored",
+        },
+        onRender: () => (
+          <span className="command-bar-text" title={filePath}>
+            {filePath}
+          </span>
+        ),
+      },
+    ];
+    /*
+    if (this.props.diffModel && this.props.diffModel.save) {
+      const isFileChanged = false;
+      const saveCallback = this.props.diffModel.save;
+      items.push({
+        key: "save",
+        name: isFileChanged ? "Save Changes" : "Saved",
+        ariaLabel: "Save File",
+        disabled: !isFileChanged,
+        iconProps: {
+          iconName: "Save",
+        },
+        className: isFileChanged ? "unsaved-warning" : "",
+        onClick: () => { saveCallback() },
+      });
+    }
+    */
+    return items;
+  }
+
   private getFarItems(): ICommandBarItemProps[] {
-    const isDiff = isFileDiff(this.props.file);
     return [
       {
         key: "includeWhitespace",
@@ -55,7 +84,7 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
         iconProps: {
           iconName: this.state.renderSideBySide ? "DiffInline" : "DiffSideBySide",
         },
-        disabled: !isDiff,
+        disabled: !this.props.diffModel || this.props.diffModel.type !== "diff",
         onClick: () => this.setSetting({ renderSideBySide: !this.state.renderSideBySide }),
       },
     ];
@@ -64,11 +93,11 @@ export class FilePane extends React.Component<IFilePaneProps, IState> {
   render() {
     return (
       <>
-        <CommandBar items={[]} farItems={this.getFarItems()} />
-        {this.props.file && this.props.changeList && (
+        <CommandBar items={this.getNearItems()} farItems={this.getFarItems()} />
+        {this.props.diffModel && (
           <FileEditor
-            file={this.props.file}
-            saveCallback={getSaveCallback(this.props.changeList)}
+            diffModel={this.props.diffModel}
+            saveCallback={this.props.diffModel.save}
             width={this.props.width}
             height={this.props.height - 31}
             renderSideBySide={this.state.renderSideBySide}

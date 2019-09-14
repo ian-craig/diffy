@@ -1,28 +1,23 @@
 import React from "react";
 import SplitPane from "react-split-pane";
 
-import { IDiff } from "../DataStructures/IDiff";
 import { IDiffProvider } from "../DataStructures/IDiffProvider";
 import { IChangeList } from "../DataStructures/IChangeList";
 import { ChangeListPane } from "./ChangeListPane";
 import { FilePane } from "./FilePane";
+import { SettingsStore } from "../Utils/SettingsStore";
+import { DiffModel } from "../Utils/DiffModel";
 
 import "./App.css";
-import { SettingsStore } from "../Utils/SettingsStore";
 
 export interface IAppProps {
   provider: IDiffProvider;
 }
 
-interface ISelected {
-  file: IDiff | undefined;
-  changeList: IChangeList | undefined;
-}
-
 interface IState {
   codeWidth: number;
   codeHeight: number;
-  selected: ISelected;
+  selected: DiffModel | undefined;
   changeLists: IChangeList[];
 }
 
@@ -36,13 +31,13 @@ class App extends React.Component<IAppProps, IState> {
     this.state = {
       codeWidth: 0,
       codeHeight: 0,
-      selected: { file: undefined, changeList: undefined },
+      selected: undefined,
       changeLists: [],
     };
   }
 
-  private readonly onFileChange = async (file: IDiff, changeList: IChangeList) => {
-    this.setState({ selected: { file, changeList } });
+  private readonly onFileChange = async (diffModel: DiffModel) => {
+    this.setState({ selected: diffModel });
   };
 
   private readonly refreshChanges = () => {
@@ -80,7 +75,7 @@ class App extends React.Component<IAppProps, IState> {
             refresh={this.refreshChanges}
           />
           <FilePane
-            {...this.state.selected}
+            diffModel={this.state.selected}
             width={this.state.codeWidth}
             height={this.state.codeHeight}
             settingsStore={this.settingsStore}

@@ -1,13 +1,13 @@
 import React from "react";
 import { IChangeList } from "../DataStructures/IChangeList";
-import { IDiff } from "../DataStructures/IDiff";
 import { FileList } from "./FileList";
 import { CommandBarButton } from "office-ui-fabric-react/lib/Button";
+import { DiffModel } from "../Utils/DiffModel";
 
 export interface IChangeListPaneProps {
   title: string;
   changeLists: IChangeList[];
-  onFileChange: (file: IDiff, changeList: IChangeList) => void;
+  onFileChange: (diffModel: DiffModel) => void;
   refresh: () => void;
 }
 
@@ -25,7 +25,7 @@ export class ChangeListPane extends React.Component<IChangeListPaneProps> {
       <>
         <div className="custom-CommandBar">
           <div className="primary">
-            <span className="text" title={this.props.title}>
+            <span className="command-bar-text" title={this.props.title}>
               {this.props.title}
             </span>
           </div>

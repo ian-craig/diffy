@@ -1,32 +1,33 @@
 import React from "react";
 import { IChangeList } from "../DataStructures/IChangeList";
 import { IconButton } from "office-ui-fabric-react/lib/Button";
-import { IDiffSpec, IDiff } from "../DataStructures/IDiff";
+import { IDiffSpec } from "../DataStructures/IDiff";
+import { DiffModel } from "../Utils/DiffModel";
 
 import "./FileListItem.css";
 
 export interface IFileListItemProps {
   changelist: IChangeList;
   diffSpec: IDiffSpec;
-  diff?: IDiff;
+  diffModel?: DiffModel;
 }
 
-const diffType = (fileCompare: IDiff): string => {
+const diffType = (model: DiffModel): string => {
   let diffType;
-  if (fileCompare.right === undefined) {
+  if (model.type === "delete") {
     diffType = "Delete";
-  } else if (fileCompare.left === undefined) {
+  } else if (model.type === "add") {
     diffType = "Add";
-  } else if (fileCompare.left.path !== fileCompare.right.path) {
-    if (fileCompare.left.content === fileCompare.right.content) {
+  } else if (model.diff.left.path !== model.diff.right.path) {
+    if (model.diff.left.content === model.diff.right.content) {
       diffType = "Rename";
     } else {
       diffType = "Rename+Edit";
     }
   } else {
-    if (fileCompare.left.content === fileCompare.right.content) {
+    if (model.diff.left.content === model.diff.right.content) {
       diffType = "Unchanged";
-    } else if (fileCompare.left.content.replace(/\s/g, "") === fileCompare.right.content.replace(/\s/g, "")) {
+    } else if (model.diff.left.content.replace(/\s/g, "") === model.diff.right.content.replace(/\s/g, "")) {
       diffType = "Whitespace";
     } else {
       diffType = "Edit";
@@ -35,7 +36,7 @@ const diffType = (fileCompare: IDiff): string => {
   return diffType;
 };
 
-export const FileListItem = ({ diffSpec, changelist, diff }: IFileListItemProps) => {
+export const FileListItem = ({ diffSpec, changelist, diffModel }: IFileListItemProps) => {
   const fileSpec = diffSpec.right !== undefined ? diffSpec.right : diffSpec.left;
 
   return (
@@ -44,7 +45,7 @@ export const FileListItem = ({ diffSpec, changelist, diff }: IFileListItemProps)
       <div className="file-list-item-buttons">
         <IconButton iconProps={{ iconName: "Undo" }} title="Revert" ariaLabel="Revert" />
       </div>
-      <div className="file-list-item-type">{diff ? diffType(diff) : null}</div>
+      <div className="file-list-item-type">{diffModel ? diffType(diffModel) : null}</div>
     </div>
   );
 };
