@@ -10,6 +10,7 @@
   text-overflow: ellipsis;
   flex-grow: 1;
   flex-shrink: 1;
+  white-space: nowrap;
 }
 .file-list-item-buttons,
 .file-list-item-type {

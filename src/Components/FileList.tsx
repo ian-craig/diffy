@@ -1,18 +1,19 @@
 import React from "react";
 import { IChangeList } from "../DataStructures/IChangeList";
-import { IDiffSpec, IDiff } from "../DataStructures/IDiff";
+import { IDiffSpec } from "../DataStructures/IDiff";
 import { FileListItem } from "./FileListItem";
 import { FileContentStore } from "../Utils/FileContentStore";
 import { GroupedList, IGroup } from "office-ui-fabric-react/lib/GroupedList";
 import { IColumn, DetailsRow } from "office-ui-fabric-react/lib/DetailsList";
 import { Selection, SelectionMode, SelectionZone } from "office-ui-fabric-react/lib/Selection";
 import PQueue from "p-queue";
+import { DiffModel } from "../Utils/DiffModel";
 
 import "./FileList.css";
 
 export interface IFileListProps {
   changeLists: IChangeList[];
-  onFileChange: (file: IDiff, changeList: IChangeList) => void;
+  onFileChange: (diffModel: DiffModel) => void;
 }
 
 interface IState {
@@ -26,7 +27,7 @@ interface Item {
   key: string;
   changelist: IChangeList;
   diffSpec: IDiffSpec;
-  diff?: IDiff;
+  diffModel?: DiffModel;
 }
 
 const getId = (diffSpec: IDiffSpec) => (diffSpec.left ? diffSpec.left.id : diffSpec.right.id);
@@ -52,6 +53,7 @@ export class FileList extends React.Component<IFileListProps, IState> {
   }
 
   private updateList() {
+    this.fileContentStore.clear();
     const queue = new PQueue({ concurrency: 10 });
 
     this.itemMap.clear();
@@ -76,8 +78,8 @@ export class FileList extends React.Component<IFileListProps, IState> {
 
         // Asyncronously load the file
         queue.add(async () => {
-          const diff = await this.fileContentStore.loadDiff(diffSpec);
-          items[index] = { key: getId(diffSpec), diffSpec, changelist, diff };
+          const diffModel = await this.fileContentStore.getDiffModel(diffSpec, changelist);
+          items[index] = { key: getId(diffSpec), diffSpec, changelist, diffModel };
           this.setState({ items });
         });
       });
@@ -108,12 +110,12 @@ export class FileList extends React.Component<IFileListProps, IState> {
     });
 
     const diffSpec = this.itemMap.get(selectedIndex) as IDiffSpec;
-    const file = await this.fileContentStore.loadDiff(diffSpec);
     const changeList = this.props.changeLists.find(cl => cl.files.find(f => f === diffSpec) !== undefined);
     if (changeList === undefined) {
       throw new Error(`Failed to find file ${diffSpec} in any changelists`);
     }
-    this.props.onFileChange(file, changeList);
+
+    this.props.onFileChange(await this.fileContentStore.getDiffModel(diffSpec, changeList));
   };
 
   private columns: IColumn[] = [

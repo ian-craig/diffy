@@ -76,7 +76,7 @@
   text-overflow: ellipsis;
 }
 
-.custom-CommandBar .text {
+.command-bar-text {
   padding: 0 4px;
   flex: 1;
   overflow: hidden;
