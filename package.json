@@ -11,6 +11,8 @@
     "@types/p-queue": "^3.2.1",
     "@types/react": "16.9.2",
     "@types/react-dom": "16.9.0",
+    "@types/react-redux": "^7.1.2",
+    "@types/redux": "^3.6.0",
     "cross-env": "^5.2.0",
     "electron-is-dev": "^1.1.0",
     "electron-store": "^4.0.0",
@@ -22,8 +24,10 @@
     "react-dom": "^16.9.0",
     "react-list-select": "^0.4.1",
     "react-monaco-editor": "^0.30.1",
+    "react-redux": "^7.1.1",
     "react-scripts": "3.1.1",
     "react-split-pane": "^0.1.87",
+    "redux": "^4.0.4",
     "short-hash": "^1.0.0",
     "typescript": "3.5.3"
   },
@@ -62,9 +66,11 @@
     ]
   },
   "devDependencies": {
+    "@types/electron-devtools-installer": "^2.2.0",
     "concurrently": "^4.1.2",
     "electron": "^6.0.3",
     "electron-builder": "^21.2.0",
+    "electron-devtools-installer": "^2.2.4",
     "husky": "^3.0.5",
     "lint-staged": "^9.2.5",
     "prettier": "^1.18.2",

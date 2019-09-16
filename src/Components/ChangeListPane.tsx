@@ -3,6 +3,8 @@ import { IChangeList } from "../DataStructures/IChangeList";
 import { FileList } from "./FileList";
 import { CommandBarButton } from "office-ui-fabric-react/lib/Button";
 import { DiffModel } from "../Utils/DiffModel";
+import { AppState } from "../state/Store";
+import { connect } from "react-redux";
 
 export interface IChangeListPaneProps {
   title: string;
@@ -11,30 +13,32 @@ export interface IChangeListPaneProps {
   refresh: () => void;
 }
 
-export class ChangeListPane extends React.Component<IChangeListPaneProps> {
-  public render() {
-    const refreshButtonProps = {
-      key: "refresh",
-      ariaLabel: "Refresh Changes",
-      iconProps: {
-        iconName: "Refresh",
-      },
-      onClick: this.props.refresh,
-    };
-    return (
-      <>
-        <div className="custom-CommandBar">
-          <div className="primary">
-            <span className="command-bar-text" title={this.props.title}>
-              {this.props.title}
-            </span>
-          </div>
-          <div className="secondary">
-            <CommandBarButton {...refreshButtonProps} />
-          </div>
+const mapStateToProps = (state: AppState, props: IChangeListPaneProps) => {
+  return props;
+};
+
+export const ChangeListPane = connect(mapStateToProps)((props: IChangeListPaneProps) => {
+  const refreshButtonProps = {
+    key: "refresh",
+    ariaLabel: "Refresh Changes",
+    iconProps: {
+      iconName: "Refresh",
+    },
+    onClick: props.refresh,
+  };
+  return (
+    <>
+      <div className="custom-CommandBar">
+        <div className="primary">
+          <span className="command-bar-text" title={props.title}>
+            {props.title}
+          </span>
         </div>
-        <FileList changeLists={this.props.changeLists} onFileChange={this.props.onFileChange} />
-      </>
-    );
-  }
-}
+        <div className="secondary">
+          <CommandBarButton {...refreshButtonProps} />
+        </div>
+      </div>
+      <FileList changeLists={props.changeLists} onFileChange={props.onFileChange} />
+    </>
+  );
+});
