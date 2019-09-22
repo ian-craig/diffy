@@ -1,15 +1,13 @@
-import { IDiffSpec } from "../DataStructures/IDiff";
-import { createStore, combineReducers, Action, AnyAction } from "redux";
-import { changelistsReducer, ChangeListsState } from "./ChangeLists";
-
-export type DiffStore = {
-  id: string;
-  spec: IDiffSpec;
-  model?: any;
-};
+import { createStore, combineReducers, AnyAction, applyMiddleware, compose } from "redux";
+import { changelistsReducer, ChangeListsState, getChangelists } from "./ChangeLists";
+import { IDiffProvider } from "../DataStructures/IDiffProvider";
+import createSagaMiddleware from "@redux-saga/core";
+import { getChangesSagaFactory } from "./GetChangesSaga";
+import { DiffsState, diffsReducer } from "./Diffs";
 
 export type AppState = {
   changelists: ChangeListsState;
+  diffs: DiffsState;
 };
 /*
 export type AppState = {
@@ -29,14 +27,25 @@ export type AppState = {
 }
 */
 
-export const createReduxStore = () => {
+export const createReduxStore = (provider: IDiffProvider) => {
   //@ts-ignore
   const devToolsExtension = window.__REDUX_DEVTOOLS_EXTENSION__;
+  const sagaMiddleware = createSagaMiddleware();
 
-  return createStore<AppState, AnyAction, unknown, unknown>(
+  const store = createStore<AppState, AnyAction, unknown, unknown>(
     combineReducers({
       changelists: changelistsReducer,
+      diffs: diffsReducer,
     }),
-    devToolsExtension && devToolsExtension(),
+    compose(
+      applyMiddleware(sagaMiddleware),
+      devToolsExtension && devToolsExtension(),
+    ),
   );
+
+  sagaMiddleware.run(getChangesSagaFactory(provider));
+
+  store.dispatch(getChangelists());
+
+  return store;
 };

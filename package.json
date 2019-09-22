@@ -28,6 +28,7 @@
     "react-scripts": "3.1.1",
     "react-split-pane": "^0.1.87",
     "redux": "^4.0.4",
+    "redux-saga": "^1.1.1",
     "short-hash": "^1.0.0",
     "typescript": "3.5.3"
   },

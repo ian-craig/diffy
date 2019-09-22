@@ -1,16 +1,28 @@
 import { IChangeList, IFileAction } from "../DataStructures/IChangeList";
-import { Reducer, Action } from "redux";
-import { LOAD_CHANGELISTS } from "./ActionTypes";
+import { Action } from "redux";
+import { GET_CHANGES_SUCCEEDED, GET_CHANGES } from "./ActionTypes";
 import { diffId } from "../Utils/DiffId";
+import { AppState } from "./Store";
 
-export const loadChangelists = (changeLists: IChangeList[]) => {};
+export const getChangelists = () => ({ type: GET_CHANGES });
 
-interface LoadChangelistsAction extends Action {
-  type: typeof LOAD_CHANGELISTS;
+export const changeListsSelector = (state: AppState): IChangeList[] => {
+  return state.changelists.map(cls => {
+    return {
+      id: cls.id,
+      name: cls.name,
+      files: cls.fileIds.map(id => state.diffs[id].spec),
+      fileActions: cls.fileActions,
+    };
+  });
+};
+
+export interface GetChangesSucceededAction extends Action {
+  type: typeof GET_CHANGES_SUCCEEDED;
   payload: IChangeList[];
 }
 
-type ChangeListAction = LoadChangelistsAction;
+type ChangeListAction = GetChangesSucceededAction;
 
 type ChangeListState = {
   id: string;
@@ -21,12 +33,9 @@ type ChangeListState = {
 
 export type ChangeListsState = ChangeListState[];
 
-export const changelistsReducer: Reducer<ChangeListsState, ChangeListAction> = (
-  state: ChangeListsState = [],
-  action: ChangeListAction,
-) => {
+export const changelistsReducer = (state: ChangeListsState = [], action: ChangeListAction) => {
   switch (action.type) {
-    case LOAD_CHANGELISTS:
+    case GET_CHANGES_SUCCEEDED:
       return action.payload.map(cl => ({
         id: cl.id,
         name: cl.name,

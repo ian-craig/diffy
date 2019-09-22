@@ -5,19 +5,36 @@ import { CommandBarButton } from "office-ui-fabric-react/lib/Button";
 import { DiffModel } from "../Utils/DiffModel";
 import { AppState } from "../state/Store";
 import { connect } from "react-redux";
+import { AnyAction, Dispatch } from "redux";
+import { getChangelists, changeListsSelector } from "../state/ChangeLists";
 
 export interface IChangeListPaneProps {
   title: string;
-  changeLists: IChangeList[];
   onFileChange: (diffModel: DiffModel) => void;
+}
+
+interface IChangeListPaneAllProps extends IChangeListPaneProps {
+  changeLists: IChangeList[];
   refresh: () => void;
 }
 
 const mapStateToProps = (state: AppState, props: IChangeListPaneProps) => {
-  return props;
+  return {
+    ...props,
+    changeLists: changeListsSelector(state),
+  };
 };
 
-export const ChangeListPane = connect(mapStateToProps)((props: IChangeListPaneProps) => {
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => {
+  return {
+    refresh: () => dispatch(getChangelists()),
+  };
+};
+
+export const ChangeListPane = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)((props: IChangeListPaneAllProps) => {
   const refreshButtonProps = {
     key: "refresh",
     ariaLabel: "Refresh Changes",

@@ -99,7 +99,7 @@ export class FileContentStore {
 
   public clear(): void {
     this.loadedDiffs.clear();
-    Array.from(this.modelPromises.values()).map(mp => {
+    Array.from(this.modelPromises.values()).forEach(mp => {
       mp.then(diffModel => {
         if (diffModel.type === "diff") {
           diffModel.model.modified.dispose();

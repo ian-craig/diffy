@@ -19,11 +19,11 @@ if (process.env.NODE_ENV !== "production" && window.require === undefined) {
   provider = remote.getGlobal("provider");
 }
 
-const store = createReduxStore();
+const store = createReduxStore(provider);
 
 ReactDOM.render(
   <Provider store={store}>
-    <App provider={provider} />
+    <App title={provider.title || ""} />
   </Provider>,
   document.getElementById("root"),
 );
