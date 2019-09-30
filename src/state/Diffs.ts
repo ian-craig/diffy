@@ -4,6 +4,7 @@ import { GET_FILE_SUCCEEDED, GET_FILE, GET_CHANGES_SUCCEEDED } from "./ActionTyp
 import { diffId } from "../Utils/DiffId";
 import { IDiffSpec } from "../DataStructures/IDiff";
 import { GetChangesSucceededAction } from "./ChangeLists";
+import { DiffModel } from "../Utils/DiffModel";
 
 export const getDiff = () => ({ type: GET_FILE });
 
@@ -17,7 +18,7 @@ type DiffAction = GetDiffSucceededAction | GetChangesSucceededAction;
 type DiffStore = {
   id: string;
   spec: IDiffSpec;
-  model?: any;
+  model?: DiffModel;
 };
 
 export type DiffsState = { [id: string]: DiffStore };
@@ -32,12 +33,9 @@ export const diffsReducer = (state: DiffsState = {}, action: DiffAction) => {
           newFiles[id] = { id, spec };
         }
       }
-      return {
-        ...state,
-        ...newFiles,
-      };
+      return newFiles;
     case GET_FILE_SUCCEEDED:
-      return state;
+      return state; //TODO
 
     default:
       return state;
