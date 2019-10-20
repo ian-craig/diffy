@@ -4,28 +4,15 @@ import { IDiffProvider } from "../DataStructures/IDiffProvider";
 import createSagaMiddleware from "@redux-saga/core";
 import { getChangesSagaFactory } from "./GetChangesSaga";
 import { DiffsState, diffsReducer } from "./Diffs";
+import { SettingsState, settingsReducer } from "./Settings";
+import { selectedReducer, SelectedState } from "./Selected";
 
 export type AppState = {
   changelists: ChangeListsState;
   diffs: DiffsState;
+  settings: SettingsState;
+  selected: SelectedState;
 };
-/*
-export type AppState = {
-    settings: {
-        [name: string]: number | string,
-    },
-    changelists: [
-
-    ],
-    diffs: {
-        [id: string]: DiffStore,
-    }
-    selected: {
-        type: "diff" | "changelist",
-        id: string,
-    }
-}
-*/
 
 export const createReduxStore = (provider: IDiffProvider) => {
   //@ts-ignore
@@ -36,6 +23,8 @@ export const createReduxStore = (provider: IDiffProvider) => {
     combineReducers({
       changelists: changelistsReducer,
       diffs: diffsReducer,
+      settings: settingsReducer,
+      selected: selectedReducer,
     }),
     compose(
       applyMiddleware(sagaMiddleware),

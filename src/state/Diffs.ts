@@ -1,26 +1,14 @@
-import { IChangeList } from "../DataStructures/IChangeList";
-import { Action } from "redux";
-import { GET_FILE_SUCCEEDED, GET_FILE, GET_CHANGES_SUCCEEDED } from "./ActionTypes";
+import { GET_FILE, GET_CHANGES_SUCCEEDED, GET_DIFF_SUCCEEDED } from "./ActionTypes";
 import { diffId } from "../Utils/DiffId";
-import { IDiffSpec } from "../DataStructures/IDiff";
 import { GetChangesSucceededAction } from "./ChangeLists";
+import { DiffModel } from "../Utils/DiffModel";
+import { GetDiffModelSucceededAction } from "./GetChangesSaga";
 
 export const getDiff = () => ({ type: GET_FILE });
 
-interface GetDiffSucceededAction extends Action {
-  type: typeof GET_FILE_SUCCEEDED;
-  payload: IChangeList[];
-}
+type DiffAction = GetDiffModelSucceededAction | GetChangesSucceededAction;
 
-type DiffAction = GetDiffSucceededAction | GetChangesSucceededAction;
-
-type DiffStore = {
-  id: string;
-  spec: IDiffSpec;
-  model?: any;
-};
-
-export type DiffsState = { [id: string]: DiffStore };
+export type DiffsState = { [id: string]: DiffModel };
 
 export const diffsReducer = (state: DiffsState = {}, action: DiffAction) => {
   switch (action.type) {
@@ -29,15 +17,15 @@ export const diffsReducer = (state: DiffsState = {}, action: DiffAction) => {
       for (const cl of action.payload) {
         for (const spec of cl.files) {
           const id = diffId(spec);
-          newFiles[id] = { id, spec };
+          newFiles[id] = { id, type: undefined, filePath: spec.right ? spec.right.path : spec.left.path };
         }
       }
+      return newFiles;
+    case GET_DIFF_SUCCEEDED:
       return {
         ...state,
-        ...newFiles,
+        [action.model.id]: action.model,
       };
-    case GET_FILE_SUCCEEDED:
-      return state;
 
     default:
       return state;

@@ -3,15 +3,23 @@ import { Action } from "redux";
 import { GET_CHANGES_SUCCEEDED, GET_CHANGES } from "./ActionTypes";
 import { diffId } from "../Utils/DiffId";
 import { AppState } from "./Store";
+import { DiffModel } from "../Utils/DiffModel";
 
 export const getChangelists = () => ({ type: GET_CHANGES });
 
-export const changeListsSelector = (state: AppState): IChangeList[] => {
+export interface IChangeListModel {
+  id: string;
+  name: string;
+  files: DiffModel[];
+  fileActions?: IFileAction[];
+}
+
+export const changeListsSelector = (state: AppState): IChangeListModel[] => {
   return state.changelists.map(cls => {
     return {
       id: cls.id,
       name: cls.name,
-      files: cls.fileIds.map(id => state.diffs[id].spec),
+      files: cls.fileIds.map(id => state.diffs[id]),
       fileActions: cls.fileActions,
     };
   });

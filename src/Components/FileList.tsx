@@ -1,18 +1,19 @@
 import React from "react";
-import { IChangeList } from "../DataStructures/IChangeList";
-import { IDiffSpec } from "../DataStructures/IDiff";
 import { FileListItem } from "./FileListItem";
-import { FileContentStore } from "../Utils/FileContentStore";
-import PQueue from "p-queue";
-import { DiffModel } from "../Utils/DiffModel";
 
 import "./FileList.css";
+import { connect } from "react-redux";
+import { AppState } from "../state/Store";
+import { changeListsSelector, IChangeListModel } from "../state/ChangeLists";
+import { setSelectedDiff } from "../state/Selected";
+import { Dispatch, AnyAction } from "redux";
 
 const List = require("react-list-select").default;
 
-export interface IFileListProps {
-  changeLists: IChangeList[];
-  onFileChange: (diffModel: DiffModel) => void;
+interface IProps {
+  changeLists: IChangeListModel[];
+  selectedDiffId: string | undefined;
+  selectDiff: (id: string) => void;
 }
 
 interface IState {
@@ -21,11 +22,10 @@ interface IState {
   disabled: number[];
 }
 
-export class FileList extends React.Component<IFileListProps, IState> {
-  private itemMap = new Map<number, IDiffSpec>();
-  private fileContentStore = new FileContentStore();
+class FileListComponent extends React.Component<IProps, IState> {
+  private itemMap = new Map<number, string>();
 
-  public constructor(props: IFileListProps) {
+  public constructor(props: IProps) {
     super(props);
 
     this.state = {
@@ -40,9 +40,6 @@ export class FileList extends React.Component<IFileListProps, IState> {
   }
 
   private updateList() {
-    this.fileContentStore.clear();
-    const queue = new PQueue({ concurrency: 10 });
-
     this.itemMap.clear();
     const items: JSX.Element[] = [];
     const disabled: number[] = [];
@@ -51,18 +48,11 @@ export class FileList extends React.Component<IFileListProps, IState> {
       disabled.push(items.length);
       items.push(<div key={`cl-${cIndex}-title`}>{cl.name}</div>);
 
-      cl.files.forEach(ds => {
+      cl.files.forEach(diffModel => {
         const index = items.length;
 
-        this.itemMap.set(index, ds);
-        items.push(<FileListItem diffSpec={ds} changelist={cl} />);
-
-        // Asyncronously load the file
-        queue.add(async () => {
-          const model = await this.fileContentStore.getDiffModel(ds, cl);
-          items[index] = <FileListItem diffSpec={ds} diffModel={model} changelist={cl} />;
-          this.setState({ items });
-        });
+        this.itemMap.set(index, diffModel.id);
+        items.push(<FileListItem diffModel={diffModel} changelist={cl} />);
       });
     });
 
@@ -71,12 +61,15 @@ export class FileList extends React.Component<IFileListProps, IState> {
       disabled,
     });
 
-    if (this.itemMap.size > 0) {
+    const selectedIsInItems =
+      this.props.selectedDiffId !== undefined &&
+      Array.from(this.itemMap.values()).find(id => id === this.props.selectedDiffId) !== undefined;
+    if (!selectedIsInItems && this.itemMap.size > 0) {
       this.onChange(Array.from(this.itemMap.keys())[0]);
     }
   }
 
-  public componentDidUpdate(oldProps: IFileListProps) {
+  public componentDidUpdate(oldProps: IProps) {
     if (this.props.changeLists !== oldProps.changeLists) {
       this.updateList();
     }
@@ -88,13 +81,7 @@ export class FileList extends React.Component<IFileListProps, IState> {
       selected: [selectedIndex],
     });
 
-    const diffSpec = this.itemMap.get(selectedIndex) as IDiffSpec;
-    const changeList = this.props.changeLists.find(cl => cl.files.find(f => f === diffSpec) !== undefined);
-    if (changeList === undefined) {
-      throw new Error(`Failed to find file ${diffSpec} in any changelists`);
-    }
-
-    this.props.onFileChange(await this.fileContentStore.getDiffModel(diffSpec, changeList));
+    this.props.selectDiff(this.itemMap.get(selectedIndex) as string);
   };
 
   public render() {
@@ -111,3 +98,21 @@ export class FileList extends React.Component<IFileListProps, IState> {
     );
   }
 }
+
+const mapStateToProps = (state: AppState) => {
+  return {
+    selectedDiffId: state.selected.id,
+    changeLists: changeListsSelector(state),
+  };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => {
+  return {
+    selectDiff: (id: string) => dispatch(setSelectedDiff(id)),
+  };
+};
+
+export const FileList = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(FileListComponent);

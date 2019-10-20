@@ -5,3 +5,11 @@ export const GET_CHANGES_FAILED = "GET_CHANGES_FAILED";
 export const GET_FILE = "GET_FILE";
 export const GET_FILE_SUCCEEDED = "GET_FILE_SUCCEEDED";
 export const GET_FILE_FAILED = "GET_FILE_FAILED";
+
+export const SET_SETTINGS = "SET_SETTINGS";
+
+export const SET_SELECTED = "SET_SELECTED";
+
+export const GET_DIFF = "GET_DIFF";
+export const GET_DIFF_SUCCEEDED = "GET_DIFF_SUCCEEDED";
+export const GET_DIFF_FAILED = "GET_DIFF_FAILED";
