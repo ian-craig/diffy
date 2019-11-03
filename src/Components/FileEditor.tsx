@@ -1,19 +1,26 @@
 import React from "react";
 import * as monaco from "monaco-editor";
-import { DiffModel } from "../Utils/DiffModel";
+import { DiffModel, EditableDiffModel } from "../Utils/DiffModel";
 
 export interface IFileEditorProps {
   width: number;
   height: number;
   diffModel: DiffModel;
-  saveCallback?: () => Promise<void>;
+  saveCallback?: () => void;
   renderSideBySide: boolean;
-  includeWhitespace: boolean;
+  showWhitespace: boolean;
+  editDiff?: (id: string, content: string) => void;
 }
+
+const updateTextModelIfDifferent = (model: monaco.editor.ITextModel, newContent: string) => {
+  if (newContent !== model.getValue()) {
+    model.setValue(newContent);
+  }
+};
 
 export class FileEditor extends React.Component<IFileEditorProps> {
   private containerRef = React.createRef<HTMLDivElement>();
-  private editor!: monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
+  private editor: monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor | undefined;
   private diffNavigator?: monaco.editor.IDiffNavigator;
 
   private baseEditorOptions(): monaco.editor.IEditorOptions {
@@ -21,7 +28,7 @@ export class FileEditor extends React.Component<IFileEditorProps> {
       fontSize: 12,
       readOnly: this.props.saveCallback === undefined,
       scrollBeyondLastLine: false,
-      renderWhitespace: this.props.includeWhitespace ? "all" : "none",
+      renderWhitespace: this.props.showWhitespace ? "all" : "none",
       //theme: 'vs-dark', //TODO Make this a settings
     };
   }
@@ -33,18 +40,28 @@ export class FileEditor extends React.Component<IFileEditorProps> {
       throw new Error("Expected container to be initialized.");
     }
 
+    if (this.props.diffModel.type === undefined) {
+      return;
+    }
+
     const options = this.baseEditorOptions();
 
     let editableModel: monaco.editor.ITextModel | undefined = undefined;
     if (this.props.diffModel.type === "diff") {
+      const { left, right } = this.props.diffModel.diff;
+
       this.editor = monaco.editor.createDiffEditor(containerElement, {
         ...options,
         renderSideBySide: this.props.renderSideBySide,
-        ignoreTrimWhitespace: !this.props.includeWhitespace,
+        ignoreTrimWhitespace: !this.props.showWhitespace,
       });
 
-      editableModel = this.props.diffModel.model.modified;
-      this.editor.setModel(this.props.diffModel.model);
+      const rightContent = this.props.diffModel.unsavedContent ? this.props.diffModel.unsavedContent : right.content;
+      editableModel = monaco.editor.createModel(rightContent, undefined, monaco.Uri.file(right.path));
+      this.editor.setModel({
+        original: monaco.editor.createModel(left.content),
+        modified: editableModel,
+      });
 
       this.diffNavigator = monaco.editor.createDiffNavigator(this.editor, {
         followsCaret: true, // resets the navigator state when the user selects something in the editor
@@ -57,17 +74,28 @@ export class FileEditor extends React.Component<IFileEditorProps> {
         this.diffNavigator.next(); //TODO Preserve scroll state if it exists
       }
     } else {
+      let fileContent;
+      let filePath;
+      if (this.props.diffModel.type === "add") {
+        fileContent = this.props.diffModel.unsavedContent || this.props.diffModel.diff.right.content;
+        filePath = this.props.diffModel.diff.right.path;
+      } else {
+        fileContent = this.props.diffModel.diff.left.content;
+        filePath = this.props.diffModel.diff.left.path;
+      }
       this.editor = monaco.editor.create(containerElement, options);
 
+      const model = monaco.editor.createModel(fileContent, undefined, monaco.Uri.file(filePath));
       if (this.props.saveCallback !== undefined) {
-        editableModel = this.props.diffModel.model;
+        editableModel = model;
       }
-      (this.editor as monaco.editor.IStandaloneCodeEditor).setModel(this.props.diffModel.model);
+      (this.editor as monaco.editor.IStandaloneCodeEditor).setModel(model);
     }
 
-    if (editableModel !== undefined) {
+    const editDiffCallback = this.props.editDiff;
+    if (editableModel !== undefined && editDiffCallback) {
       editableModel.onDidChangeContent(() => {
-        editableModel!.getValue();
+        editDiffCallback(this.props.diffModel.id, editableModel!.getValue());
       });
 
       this.editor.addAction({
@@ -105,28 +133,24 @@ export class FileEditor extends React.Component<IFileEditorProps> {
 
   private disposeEditor() {
     if (this.editor) {
-      this.disposeModels();
-      this.editor.dispose();
-      if (this.diffNavigator) {
-        this.diffNavigator.dispose();
-        this.diffNavigator = undefined;
-      }
-    }
-  }
-
-  private disposeModels() {
-    if (this.editor) {
       const model = this.editor.getModel();
       if (model && "original" in model) {
         if (model.original) {
-          //model.original.dispose();
+          model.original.dispose();
         }
         if (model.modified) {
-          //model.modified.dispose();
+          model.modified.dispose();
         }
       } else if (model) {
-        //model.dispose();
+        model.dispose();
       }
+
+      this.editor.dispose();
+      this.editor = undefined;
+    }
+    if (this.diffNavigator) {
+      this.diffNavigator.dispose();
+      this.diffNavigator = undefined;
     }
   }
 
@@ -137,12 +161,34 @@ export class FileEditor extends React.Component<IFileEditorProps> {
   componentDidUpdate(prevProps: IFileEditorProps) {
     if (
       this.props.renderSideBySide !== prevProps.renderSideBySide ||
-      this.props.includeWhitespace !== prevProps.includeWhitespace ||
-      this.props.diffModel !== prevProps.diffModel ||
-      this.props.saveCallback !== prevProps.saveCallback
+      this.props.showWhitespace !== prevProps.showWhitespace ||
+      this.props.diffModel.id !== prevProps.diffModel.id ||
+      this.props.diffModel.type !== prevProps.diffModel.type ||
+      !!this.props.saveCallback !== !!prevProps.saveCallback
     ) {
       this.createModels();
       return;
+    }
+
+    const model = this.editor && this.editor.getModel();
+    if (model && (this.props.diffModel as EditableDiffModel).diff !== (prevProps.diffModel as EditableDiffModel).diff) {
+      if (this.props.diffModel.type == "diff") {
+        const diffModel = model as monaco.editor.IDiffEditorModel;
+        updateTextModelIfDifferent(diffModel.original, this.props.diffModel.diff.left.content);
+        updateTextModelIfDifferent(
+          diffModel.modified,
+          this.props.diffModel.unsavedContent || this.props.diffModel.diff.right.content,
+        );
+      } else if (this.props.diffModel.type == "add") {
+        const diffModel = model as monaco.editor.ITextModel;
+        updateTextModelIfDifferent(
+          diffModel,
+          this.props.diffModel.unsavedContent || this.props.diffModel.diff.right.content,
+        );
+      } else if (this.props.diffModel.type == "delete") {
+        const diffModel = model as monaco.editor.ITextModel;
+        diffModel.setValue(this.props.diffModel.diff.left.content);
+      }
     }
 
     /*

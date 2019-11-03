@@ -4,6 +4,8 @@ import "./index.css";
 import App from "./Components/App";
 
 import { initializeIcons } from "@uifabric/icons";
+import { createReduxStore } from "./state/Store";
+import { Provider } from "react-redux";
 initializeIcons();
 
 let provider;
@@ -17,4 +19,11 @@ if (process.env.NODE_ENV !== "production" && window.require === undefined) {
   provider = remote.getGlobal("provider");
 }
 
-ReactDOM.render(<App provider={provider} />, document.getElementById("root"));
+const store = createReduxStore(provider);
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App title={provider.title || ""} />
+  </Provider>,
+  document.getElementById("root"),
+);

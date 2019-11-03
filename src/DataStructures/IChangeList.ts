@@ -8,7 +8,11 @@ export enum ActionType {
 
 export interface IFileAction {
   type: ActionType;
-  callback: (rightFile: IDiff) => Promise<void>;
+  /**
+   * Perform the action
+   * @returns A promise which resolves a boolean when completed indicating whether to reload all changelists. Rejects on failure.
+   */
+  callback: (rightFile: IDiff) => Promise<boolean>;
 }
 
 export interface IChangeList {

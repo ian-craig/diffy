@@ -1,27 +1,30 @@
-import * as monaco from "monaco-editor";
 import { IEditDiff, IAddDiff, IDeleteDiff } from "../DataStructures/IDiff";
 
 interface DiffModelBase {
+  id: string;
   filePath: string;
-  save?: () => Promise<void>;
+}
+
+interface DiffModelLoading extends DiffModelBase {
+  type: undefined;
 }
 
 interface DiffModelEdit extends DiffModelBase {
   type: "diff";
-  model: monaco.editor.IDiffEditorModel;
   diff: IEditDiff;
+  unsavedContent?: string;
 }
 
 interface DiffModelAdd extends DiffModelBase {
   type: "add";
-  model: monaco.editor.ITextModel;
   diff: IAddDiff;
+  unsavedContent?: string;
 }
 
 interface DiffModelDelete extends DiffModelBase {
   type: "delete";
-  model: monaco.editor.ITextModel;
   diff: IDeleteDiff;
 }
 
-export type DiffModel = DiffModelEdit | DiffModelAdd | DiffModelDelete;
+export type DiffModel = DiffModelLoading | DiffModelEdit | DiffModelAdd | DiffModelDelete;
+export type EditableDiffModel = DiffModelEdit | DiffModelAdd;

@@ -1,19 +1,21 @@
 import React from "react";
-import { IChangeList } from "../DataStructures/IChangeList";
-import { IDiffSpec } from "../DataStructures/IDiff";
 import { FileListItem } from "./FileListItem";
-import { FileContentStore } from "../Utils/FileContentStore";
 import { GroupedList, IGroup } from "office-ui-fabric-react/lib/GroupedList";
 import { IColumn, DetailsRow } from "office-ui-fabric-react/lib/DetailsList";
 import { Selection, SelectionMode, SelectionZone } from "office-ui-fabric-react/lib/Selection";
-import PQueue from "p-queue";
-import { DiffModel } from "../Utils/DiffModel";
-
+import { connect } from "react-redux";
+import { AppState } from "../state/Store";
+import { changeListsSelector, IChangeListModel } from "../state/ChangeLists";
+import { setSelectedDiff } from "../state/Selected";
+import { Dispatch, AnyAction } from "redux";
 import "./FileList.css";
 
-export interface IFileListProps {
-  changeLists: IChangeList[];
-  onFileChange: (diffModel: DiffModel) => void;
+const List = require("react-list-select").default;
+
+interface IProps {
+  changeLists: IChangeListModel[];
+  selectedDiffId: string | undefined;
+  selectDiff: (id: string) => void;
 }
 
 interface IState {
@@ -30,14 +32,11 @@ interface Item {
   diffModel?: DiffModel;
 }
 
-const getId = (diffSpec: IDiffSpec) => (diffSpec.left ? diffSpec.left.id : diffSpec.right.id);
-
-export class FileList extends React.Component<IFileListProps, IState> {
-  private itemMap = new Map<number, IDiffSpec>();
-  private fileContentStore = new FileContentStore();
+class FileListComponent extends React.Component<IProps, IState> {
+  private itemMap = new Map<number, string>();
   private _selection = new Selection();
 
-  public constructor(props: IFileListProps) {
+  public constructor(props: IProps) {
     super(props);
 
     this.state = {
@@ -53,9 +52,6 @@ export class FileList extends React.Component<IFileListProps, IState> {
   }
 
   private updateList() {
-    this.fileContentStore.clear();
-    const queue = new PQueue({ concurrency: 10 });
-
     this.itemMap.clear();
     const items: Item[] = [];
     const disabled: number[] = [];
@@ -70,18 +66,11 @@ export class FileList extends React.Component<IFileListProps, IState> {
         count: changelist.files.length,
       });
 
-      changelist.files.forEach(diffSpec => {
+      cl.files.forEach(diffModel => {
         const index = items.length;
 
-        this.itemMap.set(index, diffSpec);
-        items.push({ key: getId(diffSpec), diffSpec, changelist });
-
-        // Asyncronously load the file
-        queue.add(async () => {
-          const diffModel = await this.fileContentStore.getDiffModel(diffSpec, changelist);
-          items[index] = { key: getId(diffSpec), diffSpec, changelist, diffModel };
-          this.setState({ items });
-        });
+        this.itemMap.set(index, diffModel.id);
+        items.push(<FileListItem diffModel={diffModel} changelist={cl} />);
       });
     });
 
@@ -92,12 +81,15 @@ export class FileList extends React.Component<IFileListProps, IState> {
     });
     this._selection.setItems(items);
 
-    if (this.itemMap.size > 0) {
+    const selectedIsInItems =
+      this.props.selectedDiffId !== undefined &&
+      Array.from(this.itemMap.values()).find(id => id === this.props.selectedDiffId) !== undefined;
+    if (!selectedIsInItems && this.itemMap.size > 0) {
       this.onChange(Array.from(this.itemMap.keys())[0]);
     }
   }
 
-  public componentDidUpdate(oldProps: IFileListProps) {
+  public componentDidUpdate(oldProps: IProps) {
     if (this.props.changeLists !== oldProps.changeLists) {
       this.updateList();
     }
@@ -109,13 +101,7 @@ export class FileList extends React.Component<IFileListProps, IState> {
       selected: [selectedIndex],
     });
 
-    const diffSpec = this.itemMap.get(selectedIndex) as IDiffSpec;
-    const changeList = this.props.changeLists.find(cl => cl.files.find(f => f === diffSpec) !== undefined);
-    if (changeList === undefined) {
-      throw new Error(`Failed to find file ${diffSpec} in any changelists`);
-    }
-
-    this.props.onFileChange(await this.fileContentStore.getDiffModel(diffSpec, changeList));
+    this.props.selectDiff(this.itemMap.get(selectedIndex) as string);
   };
 
   private columns: IColumn[] = [
@@ -166,3 +152,21 @@ export class FileList extends React.Component<IFileListProps, IState> {
     );
   }
 }
+
+const mapStateToProps = (state: AppState) => {
+  return {
+    selectedDiffId: state.selected.id,
+    changeLists: changeListsSelector(state),
+  };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => {
+  return {
+    selectDiff: (id: string) => dispatch(setSelectedDiff(id)),
+  };
+};
+
+export const FileList = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(FileListComponent);
