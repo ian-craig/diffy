@@ -6,6 +6,7 @@ import { getChangesSagaFactory } from "./GetChangesSaga";
 import { DiffsState, diffsReducer } from "./Diffs";
 import { SettingsState, settingsReducer } from "./Settings";
 import { selectedReducer, SelectedState } from "./Selected";
+import { providerActionSagaFactory } from "./ProviderActionSaga";
 
 export type AppState = {
   changelists: ChangeListsState;
@@ -33,6 +34,7 @@ export const createReduxStore = (provider: IDiffProvider) => {
   );
 
   sagaMiddleware.run(getChangesSagaFactory(provider));
+  sagaMiddleware.run(providerActionSagaFactory());
 
   store.dispatch(getChangelists());
 

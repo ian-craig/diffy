@@ -7,11 +7,19 @@ export const setSelectedDiff = (id: string) => ({
   newState: { type: "diff", id },
 });
 
-export const selectedSelector = (state: AppState) => {
+export const selectedDiffSelector = (state: AppState) => {
   if (state.selected.id === undefined || state.diffs[state.selected.id] === undefined) {
     return undefined;
   }
   return state.diffs[state.selected.id];
+};
+
+export const selectedChangelistSelector = (state: AppState) => {
+  if (state.selected.id === undefined || state.diffs[state.selected.id] === undefined) {
+    return undefined;
+  }
+  const diffId = state.selected.id;
+  return state.changelists.find(cl => cl.fileIds.includes(diffId));
 };
 
 interface SetSelectedAction extends Action {

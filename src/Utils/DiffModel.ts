@@ -12,13 +12,13 @@ interface DiffModelLoading extends DiffModelBase {
 interface DiffModelEdit extends DiffModelBase {
   type: "diff";
   diff: IEditDiff;
-  save?: () => Promise<void>;
+  unsavedContent?: string;
 }
 
 interface DiffModelAdd extends DiffModelBase {
   type: "add";
   diff: IAddDiff;
-  save?: () => Promise<void>;
+  unsavedContent?: string;
 }
 
 interface DiffModelDelete extends DiffModelBase {
@@ -27,3 +27,4 @@ interface DiffModelDelete extends DiffModelBase {
 }
 
 export type DiffModel = DiffModelLoading | DiffModelEdit | DiffModelAdd | DiffModelDelete;
+export type EditableDiffModel = DiffModelEdit | DiffModelAdd;

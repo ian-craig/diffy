@@ -50,7 +50,7 @@ class GitProvider implements IDiffProvider {
           {
             type: ActionType.Save,
             callback: (file: IDiff) =>
-              file.right ? writeFileAsync(file.right.path, file.right.content) : Promise.reject(),
+              file.right ? writeFileAsync(file.right.path, file.right.content).then(() => false) : Promise.reject(),
           },
         ],
       },

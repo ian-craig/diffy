@@ -32,7 +32,7 @@
     "redux": "^4.0.4",
     "redux-saga": "^1.1.1",
     "short-hash": "^1.0.0",
-    "typescript": "3.5.3"
+    "typescript": "^3.6.4"
   },
   "homepage": ".",
   "main": "build/electron.js",

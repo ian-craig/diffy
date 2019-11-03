@@ -20,7 +20,7 @@ if (process.env.NODE_ENV !== "production" && window.require === undefined) {
 
 export type SettingsState = {
   renderSideBySide: boolean;
-  includeWhitespace: boolean;
+  showWhitespace: boolean;
 };
 
 export const setSettings = (newSettings: Partial<SettingsState>) => ({ type: SET_SETTINGS, newSettings });
@@ -45,7 +45,7 @@ type SettingsAction = SetSettingsAction;
 
 const defaults: SettingsState = {
   renderSideBySide: localFileStore.get("renderSideBySide", true),
-  includeWhitespace: localFileStore.get("includeWhitespace", true),
+  showWhitespace: localFileStore.get("showWhitespace", true),
 };
 
 export const settingsReducer = (state: SettingsState = defaults, action: SettingsAction) => {
