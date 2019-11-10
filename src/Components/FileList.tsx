@@ -1,14 +1,13 @@
 import React from "react";
-import { FileListItem } from "./FileListItem";
-import { GroupedList, IGroup } from "office-ui-fabric-react/lib/GroupedList";
-import { IColumn, DetailsRow, ISelection } from "office-ui-fabric-react/lib/DetailsList";
+import { FileListRow, FileListItem } from "./FileListRow";
+import { GroupedList, IGroup, IGroupRenderProps } from "office-ui-fabric-react/lib/GroupedList";
+import { ISelection } from "office-ui-fabric-react/lib/DetailsList";
 import { Selection, SelectionMode, SelectionZone } from "office-ui-fabric-react/lib/Selection";
 import { connect } from "react-redux";
 import { AppState } from "../state/Store";
 import { changeListsSelector, IChangeListModel } from "../state/ChangeLists";
 import { setSelectedDiff } from "../state/Selected";
 import { Dispatch, AnyAction } from "redux";
-import { DiffModel } from "../Utils/DiffModel";
 
 import "./FileList.css";
 
@@ -19,16 +18,22 @@ interface IProps {
 }
 
 interface IState {
-  items: Item[];
+  items: FileListItem[];
   groups: IGroup[];
   selection: ISelection;
 }
 
-interface Item {
-  key: string;
-  changelist: IChangeListModel;
-  diffModel: DiffModel;
-}
+const groupProps: IGroupRenderProps = {
+  showEmptyGroups: true,
+  headerProps: {
+    styles: {
+      groupHeaderContainer: { height: 30 },
+      check: { display: "none" },
+      expand: { height: 30, width: 30 },
+      title: { paddingLeft: 2 },
+    },
+  },
+};
 
 class FileListComponent extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
@@ -50,7 +55,7 @@ class FileListComponent extends React.Component<IProps, IState> {
   }
 
   private updateList() {
-    const items: Item[] = [];
+    const items: FileListItem[] = [];
     const groups: IGroup[] = [];
 
     this.props.changeLists.forEach(changelist => {
@@ -72,6 +77,11 @@ class FileListComponent extends React.Component<IProps, IState> {
     });
 
     this.state.selection.setItems(items, false);
+
+    console.log({
+      items,
+      groups,
+    });
   }
 
   public componentDidUpdate(oldProps: IProps) {
@@ -89,7 +99,7 @@ class FileListComponent extends React.Component<IProps, IState> {
   }
 
   private readonly onSelectionChanged = () => {
-    const selectedItems = this.state.selection.getSelection() as Item[];
+    const selectedItems = this.state.selection.getSelection() as FileListItem[];
     console.log("Selcting", selectedItems);
     if (selectedItems.length === 1) {
       this.props.selectDiff(selectedItems[0].key);
@@ -99,46 +109,27 @@ class FileListComponent extends React.Component<IProps, IState> {
     }
   };
 
-  private columns: IColumn[] = [
-    {
-      key: "a",
-      name: "a",
-      minWidth: 1,
-      onRender: (item: Item, index?: number, column?: IColumn) => {
-        return <FileListItem {...item} />;
-      },
-    },
-  ];
-
   private _onRenderCell = (
     nestingDepth: number | undefined,
-    item: Item,
+    item: FileListItem,
     itemIndex: number | undefined,
   ): JSX.Element => {
     return (
-      <DetailsRow
-        columns={this.columns}
-        groupNestingDepth={nestingDepth}
-        item={item}
-        itemIndex={itemIndex || 0}
-        selection={this.state.selection}
-        selectionMode={SelectionMode.multiple}
-        compact={true}
-      />
+      <FileListRow selection={this.state.selection} itemIndex={itemIndex} item={item} nestingDepth={nestingDepth} />
     );
   };
 
   public render() {
     return (
       <div id="file-list">
-        <SelectionZone selection={this.state.selection} selectionMode={SelectionMode.multiple}>
+        <SelectionZone selection={this.state.selection} selectionMode={SelectionMode.single}>
           <GroupedList
             items={this.state.items}
             onRenderCell={this._onRenderCell}
             selection={this.state.selection}
-            selectionMode={SelectionMode.multiple}
             groups={this.state.groups}
             compact={true}
+            groupProps={groupProps}
           />
         </SelectionZone>
       </div>

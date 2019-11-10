@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  width: 100%;
 }
 
 .file-list-item-left {
@@ -11,11 +10,16 @@
   flex-grow: 1;
   flex-shrink: 1;
   white-space: nowrap;
+  padding-left: 0;
 }
 .file-list-item-buttons,
 .file-list-item-type {
   padding-left: 4px;
   flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.file-list-indent {
   flex-shrink: 0;
 }
 
@@ -27,8 +31,8 @@
 }
 
 .file-list-item-buttons .ms-Button {
-  height: 26px;
-  width: 26px;
+  height: 32px;
+  width: 32px;
 }
 
 .file-list-item-type {
