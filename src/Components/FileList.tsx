@@ -10,6 +10,7 @@ import { setSelectedDiff } from "../state/Selected";
 import { Dispatch, AnyAction } from "redux";
 
 import "./FileList.css";
+
 interface IProps {
   changeLists: IChangeListModel[];
   selectedDiffId: string | undefined;
@@ -76,11 +77,6 @@ class FileListComponent extends React.Component<IProps, IState> {
     });
 
     this.state.selection.setItems(items, false);
-
-    console.log({
-      items,
-      groups,
-    });
   }
 
   public componentDidUpdate(oldProps: IProps) {
