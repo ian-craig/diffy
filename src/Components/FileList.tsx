@@ -10,7 +10,6 @@ import { setSelectedDiff } from "../state/Selected";
 import { Dispatch, AnyAction } from "redux";
 
 import "./FileList.css";
-
 interface IProps {
   changeLists: IChangeListModel[];
   selectedDiffId: string | undefined;
