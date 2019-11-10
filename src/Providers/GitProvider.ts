@@ -19,7 +19,7 @@ class GitProvider implements IDiffProvider {
   }
 
   private async getFileInfo(diffFile: Git.DiffFile, readFromFile: boolean = false): Promise<IFileSpec | undefined> {
-    if (diffFile.size() === 0) {
+    if (diffFile.mode() === 0) {
       // This was a deletion (if left) or addition (if right)
       return undefined;
     }
