@@ -76,6 +76,7 @@ export const getChangesSagaFactory = (provider: IDiffProvider) => {
         }
       }
     } catch (e) {
+      console.error(e);
       yield put({ type: GET_CHANGES_FAILED, message: e.message });
     }
   }

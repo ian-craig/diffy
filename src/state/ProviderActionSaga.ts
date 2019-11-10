@@ -24,6 +24,7 @@ export const providerActionSagaFactory = () => {
         yield put({ type: GET_CHANGES });
       }
     } catch (e) {
+      console.error(e);
       yield put({ type: PROVIDER_ACTION_FAILED, message: e.message });
     }
   }
