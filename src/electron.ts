@@ -4,6 +4,7 @@ import * as isDev from "electron-is-dev";
 import { getProviders } from "./getProviders";
 import * as ElectronStore from "electron-store";
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electron-devtools-installer";
+import { autoUpdater } from "electron-updater";
 
 if (!isDev) {
   console.debug = () => {};
@@ -44,6 +45,8 @@ const createWindow = async () => {
   });
   mainWindow.loadURL(isDev ? "http://localhost:3000" : `file://${path.join(__dirname, "../build/index.html")}`);
   mainWindow.on("closed", () => (mainWindow = null));
+
+  autoUpdater.checkForUpdatesAndNotify();
 };
 app.on("ready", createWindow);
 app.on("window-all-closed", () => {
