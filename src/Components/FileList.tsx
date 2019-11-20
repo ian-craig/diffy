@@ -1,4 +1,5 @@
 import React from "react";
+import path from "path";
 import { FileListRow, FileListItem } from "./FileListRow";
 import { GroupedList, IGroup, IGroupRenderProps } from "office-ui-fabric-react/lib/GroupedList";
 import { ISelection } from "office-ui-fabric-react/lib/DetailsList";
@@ -10,6 +11,7 @@ import { setSelectedDiff } from "../state/Selected";
 import { Dispatch, AnyAction } from "redux";
 
 import "./FileList.css";
+import { DiffModel } from "../Utils/DiffModel";
 
 interface IProps {
   changeLists: IChangeListModel[];
@@ -58,18 +60,36 @@ class FileListComponent extends React.Component<IProps, IState> {
     const items: FileListItem[] = [];
     const groups: IGroup[] = [];
 
-    this.props.changeLists.forEach(changelist => {
+    for (const changelist of this.props.changeLists) {
+      let children: IGroup[] = [];
       groups.push({
         key: changelist.id,
         name: changelist.name,
         startIndex: items.length,
         count: changelist.files.length,
+        children,
       });
 
+      const dirs = new Map<string, DiffModel[]>();
       for (const diffModel of changelist.files) {
-        items.push({ key: diffModel.id, diffModel, changelist });
+        const dirPath = path.dirname(diffModel.filePath);
+        dirs.set(dirPath, (dirs.get(dirPath) || []).concat(diffModel));
       }
-    });
+
+      for (const dirPath of Array.from(dirs.keys()).sort()) {
+        const models = dirs.get(dirPath) as DiffModel[];
+        children.push({
+          key: `${changelist.id}:${dirPath}`,
+          name: dirPath,
+          startIndex: items.length,
+          count: models.length,
+          level: 1,
+        });
+        for (const diffModel of models) {
+          items.push({ key: diffModel.id, diffModel, changelist });
+        }
+      }
+    }
 
     this.setState({
       items,

@@ -1,4 +1,5 @@
 import React from "react";
+import path from "path";
 import { IconButton } from "office-ui-fabric-react/lib/Button";
 import { DiffModel } from "../Utils/DiffModel";
 import { IChangeListModel } from "../state/ChangeLists";
@@ -81,7 +82,7 @@ export const FileListRow: React.StatelessComponent<Props> = (props: Props) => {
   const { itemIndex, selection, nestingDepth } = props;
   const { diffModel, changelist } = props.item;
 
-  const indentWidth = 32 + ((nestingDepth || 1) - 1) * 30;
+  const indentWidth = 32 + ((nestingDepth || 1) - 1) * 36;
   let isSelected = false;
 
   let checkboxComponent = null;
@@ -109,7 +110,7 @@ export const FileListRow: React.StatelessComponent<Props> = (props: Props) => {
     >
       {checkboxComponent}
       <div className="file-list-indent" style={{ width: indentWidth }}></div>
-      <div className={classNames.cell + " file-list-item-left"}>{diffModel.filePath}</div>
+      <div className={classNames.cell + " file-list-item-left"}>{path.basename(diffModel.filePath)}</div>
       <div className={classNames.cell + " file-list-item-buttons"}>
         <IconButton iconProps={{ iconName: "Undo" }} title="Revert" ariaLabel="Revert" />
       </div>
