@@ -2,7 +2,7 @@
   "name": "diffy",
   "description": "A simple diff tool built on the Monaco code editor",
   "author": "ian-craig",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "repository": {
     "type": "git",
@@ -41,16 +41,19 @@
   "homepage": ".",
   "main": "build/electron.js",
   "build": {
-    "appId": "com.electron.diffy"
+    "appId": "com.electron.diffy",
+    "win": {
+      "icon": "build/icon.png"
+    }
   },
   "scripts": {
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
     "react-test": "react-scripts test --env=jsdom",
-    "electron-build": "electron-builder",
-    "release": "yarn react-build && yarn run compile && electron-builder --publish=always",
-    "build": "yarn react-build && yarn run compile && yarn electron-build",
-    "build:local": "yarn react-build && yarn run compile && yarn electron-build --dir",
+    "release": "yarn build && electron-builder --publish=always",
+    "build": "yarn react-build && yarn run compile",
+    "build:installer": "yarn build && electron-builder",
+    "build:local": "yarn build && electron-builder --dir",
     "compile": "tsc -p electron-tsconfig.json --noEmit false",
     "start": "concurrently \"yarn compile --watch\" \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron": "electron .",

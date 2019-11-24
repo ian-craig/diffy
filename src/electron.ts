@@ -1,17 +1,18 @@
 import { app, BrowserWindow, screen } from "electron";
 import * as path from "path";
 import * as isDev from "electron-is-dev";
-import { getProviders } from "./getProviders";
 import * as ElectronStore from "electron-store";
-import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from "electron-devtools-installer";
 import { autoUpdater } from "electron-updater";
+
+import { getProviders } from "./getProviders";
 
 if (!isDev) {
   console.debug = () => {};
 } else {
+  const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require("electron-devtools-installer");
   installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS])
-    .then(name => console.log(`Added Extension:  ${name}`))
-    .catch(err => console.log("An error occurred: ", err));
+    .then((name: string) => console.log(`Added Extension:  ${name}`))
+    .catch((err: any) => console.log("An error occurred: ", err));
 }
 
 const providers = getProviders();
